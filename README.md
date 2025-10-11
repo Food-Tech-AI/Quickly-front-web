@@ -1,36 +1,116 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Quickly Landing Page
+
+A beautiful, modern landing page built with Next.js 15, TypeScript, and Tailwind CSS, showcasing the Quickly application.
+
+## Features
+
+- ✨ **Modern Design**: Beautiful gradient backgrounds and smooth animations
+- 🎨 **Brand Colors**: Uses the exact color palette from the FoodTech mobile app
+- 📱 **Responsive**: Fully responsive design that works on all devices
+- ⚡ **Performance**: Built with Next.js 15 for optimal performance
+- 🎭 **Fake Data**: Pre-populated with mock recipes, testimonials, and features
+
+## Tech Stack
+
+- **Framework**: Next.js 15 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Images**: Next.js Image Optimization
+
+## Color Palette
+
+The landing page uses the Quickly brand colors:
+
+- **Primary**: `#40E0D8` (Teal/Turquoise)
+- **Secondary**: `#5EBEC4` (Light teal)
+- **Accent**: `#FCE283` (Light yellow)
+- **Background**: `#FDF9F2` (Cream/off-white)
+- **Text**: `#2D2D2D` (Dark gray)
 
 ## Getting Started
 
-First, run the development server:
+### Installation
+
+```bash
+npm install
+```
+
+### Development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view the landing page.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+landing-page/
+├── app/
+│   ├── components/          # React components
+│   │   ├── Navbar.tsx      # Navigation bar
+│   │   ├── Hero.tsx        # Hero section
+│   │   ├── Features.tsx    # Features showcase
+│   │   ├── HowItWorks.tsx  # How it works section
+│   │   ├── RecipeShowcase.tsx  # Recipe cards
+│   │   ├── Testimonials.tsx    # User testimonials
+│   │   ├── CTA.tsx         # Call to action
+│   │   └── Footer.tsx      # Footer
+│   ├── data/
+│   │   └── fakeData.ts     # Mock data for recipes, features, etc.
+│   ├── globals.css         # Global styles
+│   ├── layout.tsx          # Root layout
+│   └── page.tsx            # Home page
+├── tailwind.config.ts      # Tailwind configuration
+├── next.config.ts          # Next.js configuration
+└── package.json
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Sections
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Hero**: Eye-catching gradient header with stats
+2. **Features**: Showcase of app capabilities (6 features)
+3. **How It Works**: 3-step process visualization
+4. **Recipe Showcase**: Grid of 6 featured recipes
+5. **Testimonials**: User reviews and ratings
+6. **CTA**: Call-to-action for app downloads
+7. **Footer**: Links and social media
 
-## Deploy on Vercel
+## Customization
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Adding Real Data
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Replace the fake data in `/app/data/fakeData.ts` with real data from your backend API.
+
+### Connecting to Backend
+
+When ready to connect to the backend:
+
+1. Install axios or your preferred HTTP client
+2. Create API service files in `/app/services/`
+3. Replace static data with API calls
+4. Add loading states and error handling
+
+### Modifying Colors
+
+Update colors in `tailwind.config.ts` to match any brand changes.
+
+## Notes
+
+- All data is currently mocked and does NOT connect to the backend
+- Images are sourced from Unsplash (recipes) and Pravatar (avatars)
+- Smooth scroll behavior is enabled for navigation links
+- All buttons and links are non-functional (design only)
+
+## License
+
+This project is part of the Quickly application suite.
+# Quickly-front-web
