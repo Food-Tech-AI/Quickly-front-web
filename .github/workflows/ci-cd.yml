@@ -1,0 +1,65 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+  GHCR_PAT: ${{ secrets.GHCR_PAT }}
+  AWS_SSH_KEY: ${{ secrets.AWS_SSH_KEY }}
+  HOST: ${{ secrets.HOST }}
+
+jobs:
+  build-and-push:
+    name: Build & Push Docker Image to GHCR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.GHCR_USERNAME }}
+          password: ${{ secrets.GHCR_PAT }}
+
+      - name: Build and Push Docker Image
+        run: |
+          IMAGE_NAME=ghcr.io/${{ secrets.GHCR_USERNAME }}/quickly-front-web:prod
+          docker build -t $IMAGE_NAME .
+          docker push $IMAGE_NAME
+
+  deploy:
+    name: Deploy to EC2
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH Agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.AWS_SSH_KEY }}
+
+      - name: Sync deployment files to EC2
+        run: |
+          rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" \
+            ./docker-compose.yml \
+            ubuntu@${{ secrets.HOST }}:/home/ubuntu/foodapp/frontweb/
+
+      - name: SSH Deploy from GHCR
+        run: |
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.HOST }} << EOF
+            echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ secrets.GHCR_USERNAME }} --password-stdin
+            cd /home/ubuntu/foodapp/frontweb/
+            docker-compose pull
+            docker-compose down -v --remove-orphans
+            docker-compose up -d
+            docker image prune -a -f
+          EOF
