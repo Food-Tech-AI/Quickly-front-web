@@ -2,10 +2,8 @@ version: "3.9"
 
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: quickly-front-web:prod
+    image: ghcr.io/food-tech-ai/quickly-front-web:prod
+    container_name: quickly-web
     environment:
       NODE_ENV: production
       NEXT_PUBLIC_APP_NAME: Quickly
