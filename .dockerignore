@@ -1,0 +1,15 @@
+# node / next
+node_modules
+.npmrc
+.next/cache
+.next/trace
+.next/types
+.out
+dist
+# vcs & misc
+.git
+.gitignore
+Dockerfile*
+docker-compose*.yml
+*.log
+.env
