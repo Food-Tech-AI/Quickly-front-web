@@ -7,6 +7,7 @@ services:
     environment:
       NODE_ENV: production
       NEXT_PUBLIC_APP_NAME: Quickly
+      NEXT_IMAGE_OPTS_DISABLE: "true"
       NEXT_DISABLE_OPTIMIZED_IMAGES: "true"
     expose:
       - "3000"
