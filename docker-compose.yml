@@ -16,6 +16,8 @@ services:
       interval: 10s
       timeout: 3s
       retries: 5
+    networks:
+      - app-network
     restart: unless-stopped
 
   nginx:
@@ -24,11 +26,16 @@ services:
       app:
         condition: service_healthy
     ports:
+      - "443:443"
       - "80:80"
+    networks:
+      - app-network
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - /home/ubuntu/foodapp/frontweb/certbot/www:/etc/nginx/certbot/www:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     restart: unless-stopped
 
 networks:
-  default:
-    name: quickly-net
+  app-network:
+    external: true
