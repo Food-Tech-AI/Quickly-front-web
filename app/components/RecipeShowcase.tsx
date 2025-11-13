@@ -24,12 +24,15 @@ export default function RecipeShowcase() {
               className="bg-surface rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 group cursor-pointer"
             >
               {/* Recipe Image */}
-              <div className="relative h-64 overflow-hidden">
+              <div className="relative h-64 w-full overflow-hidden bg-gray-200">
                 <Image
                   src={recipe.image}
                   alt={recipe.title}
                   fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   className="object-cover group-hover:scale-110 transition-transform duration-500"
+                  priority={recipe.id <= 3}
+                  unoptimized={true}
                 />
                 <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1">
                   <span className="text-heart">❤️</span>
