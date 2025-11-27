@@ -13,7 +13,7 @@ export default function Navbar() {
           <div className="flex items-center gap-2 group cursor-pointer">
             <div className="text-3xl group-hover:rotate-12 transition-transform">⚡</div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent group-hover:scale-105 transition-transform">
-              Quickly
+              E-Quickly
             </h1>
           </div>
 
