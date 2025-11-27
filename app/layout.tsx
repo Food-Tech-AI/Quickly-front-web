@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Quickly",
+  title: "E-Quickly",
   description: "Transform video recipes into meals. Save recipes from cooking videos, plan your weekly meals, and add ingredients to your grocery cart to shop smarter.",
   keywords: "recipes, cooking, food, videos, cooking videos, AI, meal planning, grocery shopping, shopping cart, ingredients",
   icons: {
