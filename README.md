@@ -1,25 +1,52 @@
-# Quickly Landing Page
+# FoodTech Landing Page
 
-A beautiful, modern landing page built with Next.js 15, TypeScript, and Tailwind CSS, showcasing the Quickly application.
+A modern, full-featured web application built with Next.js 15, TypeScript, and Tailwind CSS. This application provides a beautiful interface for browsing and managing recipes, with complete backend integration.
 
-## Features
+## 🚀 Quick Start
 
-- ✨ **Modern Design**: Beautiful gradient backgrounds and smooth animations
-- 🎨 **Brand Colors**: Uses the exact color palette from the FoodTech mobile app
-- 📱 **Responsive**: Fully responsive design that works on all devices
-- ⚡ **Performance**: Built with Next.js 15 for optimal performance
-- 🎭 **Fake Data**: Pre-populated with mock recipes, testimonials, and features
+**New to this project?** See [QUICK_START.md](./QUICK_START.md) for setup instructions.
 
-## Tech Stack
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Configure environment (interactive)
+./setup-env.sh
+
+# 3. Start development server
+npm run dev
+```
+
+## 📚 Documentation
+
+- **[QUICK_START.md](./QUICK_START.md)** - Setup and getting started guide
+- **[API_CONFIG.md](./API_CONFIG.md)** - API configuration and architecture details
+- **[API_SETUP.md](./API_SETUP.md)** - Backend integration setup
+- **[FRONTEND_README.md](./FRONTEND_README.md)** - Frontend development guide
+
+## ✨ Features
+
+- 🔐 **Authentication**: Secure login with JWT tokens and HttpOnly cookies
+- 📖 **Recipe Management**: Browse, search, and view detailed recipes
+- 🎨 **Modern UI**: Beautiful gradient designs with smooth animations
+- 📱 **Responsive**: Works perfectly on all devices
+- ⚡ **Fast**: Built with Next.js 15 for optimal performance
+- 🛡️ **Type-Safe**: Full TypeScript support throughout
+- 🔄 **Real-time Search**: Instant recipe search with pagination
+- 🍳 **Categories**: Filter recipes by categories
+- 📊 **Nutrition Info**: Display nutritional information for recipes
+
+## 🛠 Tech Stack
 
 - **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
-- **Images**: Next.js Image Optimization
+- **HTTP Client**: Axios
+- **State Management**: React Hooks
+- **Authentication**: JWT with HttpOnly cookies
+- **Image Optimization**: Next.js Image component
 
-## Color Palette
-
-The landing page uses the Quickly brand colors:
+## 🎨 Color Palette
 
 - **Primary**: `#40E0D8` (Teal/Turquoise)
 - **Secondary**: `#5EBEC4` (Light teal)
@@ -27,90 +54,200 @@ The landing page uses the Quickly brand colors:
 - **Background**: `#FDF9F2` (Cream/off-white)
 - **Text**: `#2D2D2D` (Dark gray)
 
-## Getting Started
+## 🏗 Architecture
 
-### Installation
+This application uses a **proxy pattern** for API communication:
 
-```bash
-npm install
+```
+Client Components → Next.js API Routes → Backend API
 ```
 
-### Development
+### Why This Pattern?
 
-```bash
-npm run dev
+✅ **Security**: Tokens stored in HttpOnly cookies (not accessible to JavaScript)  
+✅ **No CORS Issues**: All requests appear to come from the same origin  
+✅ **Centralized Error Handling**: Consistent error handling across the app  
+✅ **Easy Logging**: Log all requests in one place  
+✅ **Environment Agnostic**: Client code doesn't need to know backend URL
+
+## 📁 Project Structure
+
+```
+landing-page/
+├── app/
+│   ├── api/                    # Next.js API routes (proxy to backend)
+│   │   ├── login/             # Login endpoint
+│   │   ├── logout/            # Logout endpoint
+│   │   ├── session/           # Session check
+│   │   ├── recipes/           # Recipe endpoints
+│   │   └── categories/        # Category endpoints
+│   ├── components/            # Reusable React components
+│   │   ├── Navbar.tsx
+│   │   ├── Hero.tsx
+│   │   ├── Features.tsx
+│   │   └── ...
+│   ├── login/                 # Login page
+│   ├── recipe/                # Recipe pages
+│   │   ├── [id]/             # Single recipe detail
+│   │   └── page.tsx          # Recipe list
+│   ├── myrecipes/            # User's recipes page
+│   └── page.tsx              # Home page
+├── lib/
+│   ├── config.ts             # Centralized configuration
+│   ├── axios.ts              # Server-side API client
+│   ├── client-api.ts         # Client-side API utilities
+│   ├── utils.ts              # Utility functions
+│   └── types/                # TypeScript type definitions
+│       ├── auth.ts
+│       └── recipe.ts
+├── .env.local                # Environment variables (create this!)
+├── next.config.ts            # Next.js configuration
+├── tailwind.config.ts        # Tailwind CSS configuration
+└── package.json
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view the landing page.
+## 🔧 Configuration
 
-### Build
+### Environment Variables
+
+Create a `.env.local` file in the root directory:
+
+```env
+BACKEND_URL=http://localhost:3000
+NEXT_PUBLIC_BACKEND_URL=http://localhost:3000
+NODE_ENV=development
+```
+
+**Note**: The frontend runs on port **3001** by default, backend on **3000**.
+
+### Port Configuration
+
+To run the frontend on a different port:
+
+```bash
+npm run dev -- -p 3002
+```
+
+## 🎯 Usage Examples
+
+### Making API Calls in Client Components
+
+```typescript
+import { api } from '@/lib/client-api';
+
+// Login
+const result = await api.login('user@example.com', 'password');
+
+// Get recipes with pagination and search
+const recipes = await api.getRecipes({ 
+  page: 1, 
+  limit: 12, 
+  search: 'pasta' 
+});
+
+// Get single recipe
+const recipe = await api.getRecipeById(123);
+
+// Logout
+await api.logout();
+```
+
+### Error Handling
+
+```typescript
+import { getClientErrorMessage } from '@/lib/client-api';
+
+try {
+  const recipes = await api.getRecipes();
+  setRecipes(recipes.data);
+} catch (error) {
+  const message = getClientErrorMessage(error);
+  setError(message);
+}
+```
+
+## 🧪 Testing
+
+Test your backend connection:
+
+```bash
+curl http://localhost:3000/health
+```
+
+Expected response: `200 OK`
+
+## 🚢 Deployment
+
+### Build for Production
 
 ```bash
 npm run build
 npm start
 ```
 
-## Project Structure
+### Environment Variables for Production
 
-```
-landing-page/
-├── app/
-│   ├── components/          # React components
-│   │   ├── Navbar.tsx      # Navigation bar
-│   │   ├── Hero.tsx        # Hero section
-│   │   ├── Features.tsx    # Features showcase
-│   │   ├── HowItWorks.tsx  # How it works section
-│   │   ├── RecipeShowcase.tsx  # Recipe cards
-│   │   ├── Testimonials.tsx    # User testimonials
-│   │   ├── CTA.tsx         # Call to action
-│   │   └── Footer.tsx      # Footer
-│   ├── data/
-│   │   └── fakeData.ts     # Mock data for recipes, features, etc.
-│   ├── globals.css         # Global styles
-│   ├── layout.tsx          # Root layout
-│   └── page.tsx            # Home page
-├── tailwind.config.ts      # Tailwind configuration
-├── next.config.ts          # Next.js configuration
-└── package.json
+Update `.env.local` (or your hosting platform's environment settings):
+
+```env
+BACKEND_URL=https://api.yourapp.com
+NEXT_PUBLIC_BACKEND_URL=https://api.yourapp.com
+NODE_ENV=production
 ```
 
-## Sections
+### Deployment Platforms
 
-1. **Hero**: Eye-catching gradient header with stats
-2. **Features**: Showcase of app capabilities (6 features)
-3. **How It Works**: 3-step process visualization
-4. **Recipe Showcase**: Grid of 6 featured recipes
-5. **Testimonials**: User reviews and ratings
-6. **CTA**: Call-to-action for app downloads
-7. **Footer**: Links and social media
+This app can be deployed to:
+- Vercel (recommended for Next.js)
+- Netlify
+- AWS Amplify
+- Any Node.js hosting platform
 
-## Customization
+Make sure to set environment variables in your platform's dashboard.
 
-### Adding Real Data
+## 🐛 Troubleshooting
 
-Replace the fake data in `/app/data/fakeData.ts` with real data from your backend API.
+### Issue: API calls fail with CORS errors
 
-### Connecting to Backend
+**Solution**: Make sure you're using the Next.js API routes. Don't call the backend directly from client components.
 
-When ready to connect to the backend:
+### Issue: 401 Unauthorized
 
-1. Install axios or your preferred HTTP client
-2. Create API service files in `/app/services/`
-3. Replace static data with API calls
-4. Add loading states and error handling
+**Solution**: 
+1. Check you're logged in
+2. Verify backend is running
+3. Clear cookies and login again
 
-### Modifying Colors
+### Issue: Environment variables not updating
 
-Update colors in `tailwind.config.ts` to match any brand changes.
+**Solution**:
+```bash
+rm -rf .next
+npm run dev
+```
 
-## Notes
+### Issue: Can't connect to backend
 
-- All data is currently mocked and does NOT connect to the backend
-- Images are sourced from Unsplash (recipes) and Pravatar (avatars)
-- Smooth scroll behavior is enabled for navigation links
-- All buttons and links are non-functional (design only)
+**Solution**:
+1. Verify backend is running: `curl http://localhost:3000/health`
+2. Check `.env.local` has correct `BACKEND_URL`
+3. Restart Next.js dev server
 
-## License
+## 📝 Available Scripts
 
-This project is part of the Quickly application suite.
-# Quickly-front-web
+- `npm run dev` - Start development server (port 3001)
+- `npm run build` - Build for production
+- `npm start` - Start production server
+- `npm run lint` - Run ESLint
+
+## 🤝 Contributing
+
+1. Make sure you're using the centralized config (`lib/config.ts`)
+2. All API calls from client components should use `api.*` from `lib/client-api`
+3. Never hardcode URLs - use environment variables
+4. Follow TypeScript best practices
+5. Keep components small and focused
+
+## 📄 License
+
+This project is part of the FoodTech application suite.
