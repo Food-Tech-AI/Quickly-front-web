@@ -111,7 +111,7 @@ export default function IngredientPickerModal({
       const newIngredient = await api.createIngredient({
         name: newName.trim(),
         description: newDescription.trim() || undefined,
-        unit: newUnit.trim() || undefined,
+        unit: newUnit.trim() || '',
         categoryId: newCategoryId ? Number(newCategoryId) : undefined,
       });
 
