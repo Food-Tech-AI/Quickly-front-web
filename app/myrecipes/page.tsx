@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 export default function MyRecipesPage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searching, setSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
@@ -17,9 +18,25 @@ export default function MyRecipesPage() {
   const limit = 12;
   const router = useRouter();
 
+  // Fetch recipes with pagination (when no search term)
   useEffect(() => {
-    fetchRecipes();
-  }, [page]);
+    if (!searchTerm) {
+      fetchRecipes();
+    }
+  }, [page, searchTerm]);
+
+  // Vector search with debounce (when search term exists)
+  useEffect(() => {
+    if (!searchTerm || !searchTerm.trim()) {
+      return;
+    }
+
+    const timeoutId = setTimeout(async () => {
+      await handleVectorSearch();
+    }, 500); // Debounce search
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
 
   async function fetchRecipes() {
     setLoading(true);
@@ -28,7 +45,6 @@ export default function MyRecipesPage() {
       const data: PaginatedRecipesResponse = await api.getPaginatedRecipes({
         page,
         limit,
-        search: searchTerm || undefined,
         sortBy: 'createdAt',
         sortOrder: 'DESC',
       });
@@ -50,10 +66,60 @@ export default function MyRecipesPage() {
     }
   }
 
+  async function handleVectorSearch() {
+    setSearching(true);
+    setError(null);
+    try {
+      const result = await api.vectorSearchRecipes(searchTerm, {
+        limit: limit,
+        minSimilarity: 0.0,
+        includeCategories: true,
+        includeIngredients: false,
+      });
+
+      let results: any[] = [];
+      if (Array.isArray(result)) {
+        results = result;
+      } else if (result?.results && Array.isArray(result.results)) {
+        results = result.results;
+      }
+
+      const recipeList = results.map((r: any) => ({
+        id: r.id,
+        title: r.title,
+        description: r.description,
+        image: r.image,
+        prepTime: r.prepTime,
+        cookTime: r.cookTime,
+        servings: r.servings,
+        similarity: r.similarity,
+        category: r.category,
+        categories: r.categories || [],
+        nutrition: r.nutrition,
+      }));
+
+      setRecipes(recipeList);
+      // For search, we don't have pagination
+      setTotalPages(1);
+      setHasNextPage(false);
+      setHasPreviousPage(false);
+    } catch (err: any) {
+      const errorMsg = getClientErrorMessage(err);
+      setError(errorMsg);
+      
+      if (err?.response?.status === 401) {
+        router.push('/login?returnTo=/myrecipes');
+      }
+    } finally {
+      setSearching(false);
+    }
+  }
+
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
-    setPage(1); // Reset to first page
-    fetchRecipes();
+    if (searchTerm && searchTerm.trim()) {
+      handleVectorSearch();
+    }
   }
 
   function handleLogout() {
@@ -93,7 +159,7 @@ export default function MyRecipesPage() {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search recipes by title..."
+                placeholder="Search recipes semantically (e.g., 'healthy breakfast', 'quick dinner')..."
                 className="flex-1 px-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               />
               <button
@@ -115,14 +181,17 @@ export default function MyRecipesPage() {
         )}
 
         {/* Loading State */}
-        {loading && (
+        {(loading || searching) && (
           <div className="flex justify-center items-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <p className="ml-4 text-textSecondary">
+              {searching ? 'Searching recipes...' : 'Loading recipes...'}
+            </p>
           </div>
         )}
 
         {/* Empty State */}
-        {!loading && !error && recipes.length === 0 && (
+        {!loading && !searching && !error && recipes.length === 0 && (
           <div className="text-center py-20">
             <div className="text-6xl mb-4">🍳</div>
             <h2 className="text-2xl font-semibold text-text mb-2">No recipes found</h2>
@@ -135,7 +204,7 @@ export default function MyRecipesPage() {
         )}
 
         {/* Recipe Grid */}
-        {!loading && recipes.length > 0 && (
+        {!loading && !searching && recipes.length > 0 && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
               {recipes.map((recipe) => (

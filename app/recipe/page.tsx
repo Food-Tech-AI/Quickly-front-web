@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { clientApi } from '@/lib/client-api';
+import { clientApi, api } from '@/lib/client-api';
 
 interface Recipe {
   id: number;
@@ -14,6 +14,8 @@ interface Recipe {
   cookTime?: number;
   servings?: number;
   categoryId?: number;
+  similarity?: number;
+  categories?: string[];
 }
 
 interface PaginationMeta {
@@ -31,19 +33,43 @@ export default function RecipePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);
+  const [searchDuration, setSearchDuration] = useState<number | null>(null);
   const router = useRouter();
 
   const recipesPerPage = 12;
 
   // Fetch recipes with pagination on initial load and page change
+  // NOTE: This is ONLY for loading all recipes when there's NO search query
+  // ALL searches must use vector search endpoint, never paginated
   useEffect(() => {
+    // CRITICAL: Never use paginated endpoint for search - only for initial load
+    if (searchQuery && searchQuery.trim().length > 0) {
+      console.log('[Load] Skipping paginated fetch - search query active. Vector search will handle it.');
+      return;
+    }
+    
     async function fetchRecipes() {
+      // Double check - never fetch paginated if search is active
+      if (searchQuery && searchQuery.trim().length > 0) {
+        console.log('[Load] Aborting paginated fetch - search detected');
+        return;
+      }
+      
       try {
         setLoading(true);
+        setError(null);
+        console.log('[Load] Fetching all recipes (no search) - using paginated endpoint');
         const response = await clientApi.get('/recipes-secondary/paginated', {
           params: {
             page: currentPage,
-            limit: recipesPerPage
+            limit: recipesPerPage,
+            sortBy: 'createdAt',
+            sortOrder: 'DESC'
+            // NOTE: No 'search' parameter - paginated endpoint should NEVER be used for search
+          },
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
           }
         });
         
@@ -72,40 +98,101 @@ export default function RecipePage() {
       }
     }
 
-    if (!searchQuery) {
-      fetchRecipes();
-    }
-  }, [currentPage, router, searchQuery, recipesPerPage]);
+    fetchRecipes();
+    // NOTE: searchQuery is NOT in dependencies - this effect only runs for initial load
+    // When searchQuery exists, this effect returns early and search effect handles it
+  }, [currentPage, router, recipesPerPage]);
 
-  // Search recipes using backend API with debounce
+  // Search recipes using vector search ONLY
+  // CRITICAL: This is the ONLY place where search happens
+  // NEVER use /recipes-secondary/paginated for search - only use /recipes-secondary/search/vector
   useEffect(() => {
-    const timeoutId = setTimeout(async () => {
-      if (!searchQuery.trim()) {
-        // Reset to page 1 when clearing search
-        if (currentPage !== 1) {
-          setCurrentPage(1);
-        }
-        return;
+    // Don't search if query is empty
+    if (!searchQuery || !searchQuery.trim()) {
+      // Reset to page 1 when clearing search
+      if (currentPage !== 1) {
+        setCurrentPage(1);
       }
+      // Clear search results when query is empty
+      if (recipes.length > 0 && searching) {
+        setRecipes([]);
+        setPagination(null);
+      }
+      return;
+    }
 
-      // Search using backend with pagination
+    console.log('[Search Effect] Search query detected:', searchQuery);
+    console.log('[Search Effect] Using VECTOR SEARCH ONLY - /recipes-secondary/search/vector');
+    
+    const timeoutId = setTimeout(async () => {
       try {
         setSearching(true);
-        const response = await clientApi.get('/recipes/paginated', {
-          params: {
-            page: currentPage,
-            limit: recipesPerPage,
-            search: searchQuery
-          }
-        });
+        setSearchDuration(null);
+        setError(null);
+        console.log('[Vector Search] Starting vector search for:', searchQuery);
         
-        const data = response.data;
-        if (data.data && data.meta) {
-          setRecipes(data.data);
-          setPagination(data.meta);
-        } else {
-          const recipeList = Array.isArray(data) ? data : data.recipes || data.data || [];
-          setRecipes(recipeList);
+        // CRITICAL: Always use vector search endpoint - NEVER use paginated for search
+        const startTime = Date.now();
+        console.log('[Vector Search] Calling /recipes-secondary/search/vector (NOT paginated)');
+        
+        try {
+          const result = await api.vectorSearchRecipes(searchQuery, {
+            limit: recipesPerPage,
+            minSimilarity: 0.0,
+            includeCategories: true,
+            includeIngredients: false,
+          });
+          
+          console.log('[Vector Search] Response:', result);
+          
+          const duration = Date.now() - startTime;
+          setSearchDuration(duration);
+          
+          // Handle different response structures
+          let results: any[] = [];
+          
+          if (Array.isArray(result)) {
+            // Direct array response
+            results = result;
+          } else if (result?.results && Array.isArray(result.results)) {
+            // Standard vector search response
+            results = result.results;
+          }
+          
+          console.log('[Vector Search] Extracted results:', results.length);
+          
+          if (results.length > 0) {
+            // Convert vector search results to Recipe format
+            const recipeList = results.map((r: any) => ({
+              id: r.id,
+              title: r.title,
+              description: r.description,
+              image: r.image,
+              prepTime: r.prepTime,
+              cookTime: r.cookTime,
+              servings: r.servings,
+              similarity: r.similarity,
+              categories: r.categories || [],
+            }));
+            
+            console.log('[Vector Search] Mapped recipes:', recipeList.length);
+            setRecipes(recipeList);
+            setPagination({
+              total: result.meta?.count || recipeList.length,
+              page: 1,
+              limit: recipesPerPage,
+              totalPages: Math.ceil((result.meta?.count || recipeList.length) / recipesPerPage),
+            });
+          } else {
+            console.log('[Vector Search] No results found. Full response:', result);
+            setRecipes([]);
+            setPagination(null);
+          }
+        } catch (searchError: any) {
+          console.error('[Vector Search] Error:', searchError);
+          console.error('[Vector Search] Error response:', searchError.response?.data);
+          setError(searchError.response?.data?.message || searchError.message || 'Vector search failed');
+          setRecipes([]);
           setPagination(null);
         }
       } catch (err: any) {
@@ -115,13 +202,19 @@ export default function RecipePage() {
           router.push('/login?returnTo=/recipe');
           return;
         }
+        
+        setError(err.message || 'Failed to search recipes');
+        setRecipes([]);
+        setPagination(null);
       } finally {
         setSearching(false);
       }
-    }, 300);
+    }, 500); // Debounce for vector search
 
     return () => clearTimeout(timeoutId);
-  }, [searchQuery, currentPage, router, recipesPerPage]);
+    // NOTE: This effect ONLY uses /recipes-secondary/search/vector
+    // NEVER uses /recipes-secondary/paginated for search
+  }, [searchQuery, router, recipesPerPage, currentPage]);
 
   if (loading) {
     return (
@@ -167,7 +260,7 @@ export default function RecipePage() {
           </Link>
         </div>
 
-        {/* Search Bar */}
+        {/* Search Bar - Vector Search Only */}
         <div className="mb-8">
           <div className="relative max-w-2xl">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -177,7 +270,7 @@ export default function RecipePage() {
             </div>
             <input
               type="text"
-              placeholder="Search recipes by name or description..."
+              placeholder="Search recipes semantically (e.g., 'healthy breakfast', 'quick dinner', 'chicken')..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-12 pr-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-surface text-text placeholder-textLight"
@@ -199,14 +292,22 @@ export default function RecipePage() {
               </div>
             )}
           </div>
+          
           {searchQuery && !searching && (
-            <p className="mt-2 text-sm text-textSecondary">
-              Found {recipes.length} recipe{recipes.length !== 1 ? 's' : ''} matching "{searchQuery}"
-            </p>
+            <div className="flex items-center gap-4 text-sm text-textSecondary mt-2">
+              <p>
+                Found {recipes.length} recipe{recipes.length !== 1 ? 's' : ''} matching "{searchQuery}"
+              </p>
+              {searchDuration !== null && (
+                <p className="text-xs">
+                  (AI search took {searchDuration}ms)
+                </p>
+              )}
+            </div>
           )}
           {searching && (
-            <p className="mt-2 text-sm text-textSecondary">
-              Searching...
+            <p className="text-sm text-textSecondary mt-2">
+              Searching with AI vector search...
             </p>
           )}
         </div>
@@ -237,13 +338,31 @@ export default function RecipePage() {
 
                 {/* Recipe Info */}
                 <div className="p-6">
-                  <h3 className="font-bold text-xl text-text mb-2 group-hover:text-primary transition-colors line-clamp-2">
-                    {recipe.title}
-                  </h3>
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <h3 className="font-bold text-xl text-text group-hover:text-primary transition-colors line-clamp-2 flex-1">
+                      {recipe.title}
+                    </h3>
+                    {recipe.similarity !== undefined && (
+                      <div className="flex-shrink-0 bg-primary/10 text-primary px-2 py-1 rounded-lg text-xs font-semibold">
+                        {(recipe.similarity * 100).toFixed(0)}% match
+                      </div>
+                    )}
+                  </div>
                   {recipe.description && (
                     <p className="text-textSecondary text-sm mb-4 line-clamp-2">
                       {recipe.description}
                     </p>
+                  )}
+                  
+                  {/* Categories */}
+                  {recipe.categories && recipe.categories.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {recipe.categories.slice(0, 3).map((cat, idx) => (
+                        <span key={idx} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                          {cat}
+                        </span>
+                      ))}
+                    </div>
                   )}
 
                   {/* Recipe Meta */}

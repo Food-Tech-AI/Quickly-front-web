@@ -37,6 +37,7 @@ export const clientApi = axios.create({
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
+    'Cache-Control': 'no-cache',
   },
   withCredentials: true, // Include cookies in requests (for CORS)
 });
@@ -191,13 +192,88 @@ export const api = {
   },
 
   /**
-   * Search recipes
+   * Search recipes (basic text search)
    */
   searchRecipes: async (search: string, category?: string): Promise<Recipe[]> => {
     const response = await clientApi.get('/recipes-secondary/search', { 
       params: { search, category } 
     });
     return response.data;
+  },
+
+  /**
+   * Vector search recipes (semantic search using embeddings)
+   */
+  vectorSearchRecipes: async (query: string, options?: {
+    limit?: number;
+    minSimilarity?: number;
+    includeCategories?: boolean;
+    includeIngredients?: boolean;
+  }): Promise<{
+    success: boolean;
+    query: {
+      original: string;
+      limit: number;
+      minSimilarity: number;
+    };
+    results: Array<{
+      id: number;
+      title: string;
+      description?: string;
+      image?: string;
+      similarity: number;
+      rank: number;
+      categories: string[];
+      ingredients: Array<{
+        name: string;
+        quantity: number;
+        unit: string;
+      }>;
+      prepTime?: number;
+      cookTime?: number;
+      servings?: number;
+    }>;
+    meta: {
+      count: number;
+      durationMs: number;
+    };
+  }> => {
+    console.log('[API] Vector search request:', {
+      query,
+      options,
+      url: '/recipes-secondary/search/vector'
+    });
+    
+    try {
+      const response = await clientApi.get('/recipes-secondary/search/vector', {
+        params: {
+          q: query,
+          limit: options?.limit || 10,
+          minSimilarity: options?.minSimilarity || 0.0,
+          includeCategories: options?.includeCategories !== false,
+          includeIngredients: options?.includeIngredients !== false,
+        },
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
+      
+      console.log('[API] Vector search response:', {
+        status: response.status,
+        data: response.data,
+        resultsCount: response.data?.results?.length || 0
+      });
+      
+      return response.data;
+    } catch (error: any) {
+      console.error('[API] Vector search error:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      throw error;
+    }
   },
 
   /**
