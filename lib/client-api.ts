@@ -7,7 +7,7 @@ import { PaginatedRecipesResponse, Recipe } from './types/recipe';
  */
 
 // Backend API URL
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000';
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://extractquick.com/api';
 
 // Token management
 const TOKEN_KEY = 'auth_token';
