@@ -9,11 +9,11 @@
 export const getBackendUrl = (): string => {
   // Server-side (API routes, SSR)
   if (typeof window === 'undefined') {
-    return process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000';
+    return process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://extractquick.com/api';
   }
   
   // Client-side
-  return process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000';
+  return process.env.NEXT_PUBLIC_BACKEND_URL || 'https://extractquick.com/api';
 };
 
 export const config = {
@@ -32,6 +32,8 @@ export const config = {
 } as const;
 
 export default config;
+
+
 
 
 
