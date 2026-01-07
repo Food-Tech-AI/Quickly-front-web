@@ -35,15 +35,18 @@ export interface Recipe {
   instructions?: string;
   image?: string;
   categoryId?: number;
-  userId: number;
+  userId?: number;
   prepTime?: number;
   cookTime?: number;
   servings?: number;
   nutrition?: Nutrition;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
   category?: Category;
+  categories?: Category[];
   ingredients?: RecipeIngredient[];
+  recipeIngredients?: RecipeIngredient[];
+  similarity?: number; // For vector search results
 }
 
 export interface PaginationMeta {

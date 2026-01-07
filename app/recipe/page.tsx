@@ -1,9 +1,15 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { clientApi, api } from '@/lib/client-api';
+import { Pagination } from '@/components/ui/pagination';
+
+interface Category {
+  id: number;
+  name: string;
+}
 
 interface Recipe {
   id: number;
@@ -15,7 +21,8 @@ interface Recipe {
   servings?: number;
   categoryId?: number;
   similarity?: number;
-  categories?: string[];
+  categories?: Category[];
+  category?: Category;
 }
 
 interface PaginationMeta {
@@ -35,6 +42,7 @@ export default function RecipePage() {
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);
   const [searchDuration, setSearchDuration] = useState<number | null>(null);
   const router = useRouter();
+  const prevSearchQueryRef = useRef<string>('');
 
   const recipesPerPage = 12;
 
@@ -43,22 +51,23 @@ export default function RecipePage() {
   // ALL searches must use vector search endpoint, never paginated
   useEffect(() => {
     // CRITICAL: Never use paginated endpoint for search - only for initial load
-    if (searchQuery && searchQuery.trim().length > 0) {
-      console.log('[Load] Skipping paginated fetch - search query active. Vector search will handle it.');
+    const hasSearchQuery = searchQuery && searchQuery.trim().length > 0;
+    if (hasSearchQuery) {
+      // Don't fetch paginated data when searching - vector search handles it
       return;
     }
     
     async function fetchRecipes() {
       // Double check - never fetch paginated if search is active
-      if (searchQuery && searchQuery.trim().length > 0) {
-        console.log('[Load] Aborting paginated fetch - search detected');
+      const stillHasSearch = searchQuery && searchQuery.trim().length > 0;
+      if (stillHasSearch) {
         return;
       }
       
       try {
         setLoading(true);
         setError(null);
-        console.log('[Load] Fetching all recipes (no search) - using paginated endpoint');
+        console.log('[Load] Fetching page', currentPage, '- using paginated endpoint');
         const response = await clientApi.get('/recipes-secondary/paginated', {
           params: {
             page: currentPage,
@@ -99,22 +108,30 @@ export default function RecipePage() {
     }
 
     fetchRecipes();
-    // NOTE: searchQuery is NOT in dependencies - this effect only runs for initial load
+    // NOTE: searchQuery is in dependencies to prevent fetch when search is active
     // When searchQuery exists, this effect returns early and search effect handles it
-  }, [currentPage, router, recipesPerPage]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, searchQuery, router, recipesPerPage]);
 
   // Search recipes using vector search ONLY
   // CRITICAL: This is the ONLY place where search happens
   // NEVER use /recipes-secondary/paginated for search - only use /recipes-secondary/search/vector
   useEffect(() => {
+    const hasSearchQuery = searchQuery && searchQuery.trim().length > 0;
+    const prevHadSearchQuery = prevSearchQueryRef.current && prevSearchQueryRef.current.trim().length > 0;
+    
+    // Update the ref for next comparison
+    prevSearchQueryRef.current = searchQuery;
+    
     // Don't search if query is empty
-    if (!searchQuery || !searchQuery.trim()) {
-      // Reset to page 1 when clearing search
-      if (currentPage !== 1) {
+    if (!hasSearchQuery) {
+      // Only reset to page 1 when clearing search (transitioning FROM search TO no search)
+      // Don't reset if we're just on a different page without search
+      if (prevHadSearchQuery && !hasSearchQuery) {
         setCurrentPage(1);
       }
-      // Clear search results when query is empty
-      if (recipes.length > 0 && searching) {
+      // Clear search results when transitioning from search to no search
+      if (prevHadSearchQuery && !hasSearchQuery) {
         setRecipes([]);
         setPagination(null);
       }
@@ -172,7 +189,10 @@ export default function RecipePage() {
               cookTime: r.cookTime,
               servings: r.servings,
               similarity: r.similarity,
-              categories: r.categories || [],
+              categories: Array.isArray(r.categories) ? r.categories.map((cat: any) => 
+                typeof cat === 'object' && cat !== null ? cat : { id: 0, name: cat }
+              ) : [],
+              category: r.category,
             }));
             
             console.log('[Vector Search] Mapped recipes:', recipeList.length);
@@ -214,7 +234,8 @@ export default function RecipePage() {
     return () => clearTimeout(timeoutId);
     // NOTE: This effect ONLY uses /recipes-secondary/search/vector
     // NEVER uses /recipes-secondary/paginated for search
-  }, [searchQuery, router, recipesPerPage, currentPage]);
+    // NOTE: currentPage is NOT in dependencies to avoid conflicts with pagination
+  }, [searchQuery, router, recipesPerPage]);
 
   if (loading) {
     return (
@@ -358,10 +379,17 @@ export default function RecipePage() {
                   {recipe.categories && recipe.categories.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-4">
                       {recipe.categories.slice(0, 3).map((cat, idx) => (
-                        <span key={idx} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
-                          {cat}
+                        <span key={typeof cat === 'object' ? cat.id : idx} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                          {typeof cat === 'object' ? cat.name : cat}
                         </span>
                       ))}
+                    </div>
+                  )}
+                  {recipe.category && !recipe.categories && (
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                        {typeof recipe.category === 'object' ? recipe.category.name : recipe.category}
+                      </span>
                     </div>
                   )}
 
@@ -429,76 +457,22 @@ export default function RecipePage() {
         )}
         
         {/* Pagination */}
-        {pagination && pagination.totalPages > 1 && (
-          <div className="mt-12 flex items-center justify-center gap-2">
-            {/* Previous Button */}
-            <button
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-              disabled={currentPage === 1 || searching}
-              className="px-4 py-2 rounded-lg border border-border bg-surface text-text hover:bg-primary hover:text-white disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-surface disabled:hover:text-text transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-
-            {/* Page Numbers */}
-            <div className="flex items-center gap-1">
-              {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((pageNum) => {
-                // Show first page, last page, current page, and pages around current
-                const showPage = 
-                  pageNum === 1 || 
-                  pageNum === pagination.totalPages || 
-                  Math.abs(pageNum - currentPage) <= 1;
-                
-                const showEllipsis = 
-                  (pageNum === 2 && currentPage > 3) ||
-                  (pageNum === pagination.totalPages - 1 && currentPage < pagination.totalPages - 2);
-
-                if (showEllipsis) {
-                  return (
-                    <span key={pageNum} className="px-2 text-textLight">
-                      ...
-                    </span>
-                  );
-                }
-
-                if (!showPage) return null;
-
-                return (
-                  <button
-                    key={pageNum}
-                    onClick={() => setCurrentPage(pageNum)}
-                    disabled={searching}
-                    className={`min-w-[40px] px-3 py-2 rounded-lg border transition-colors ${
-                      currentPage === pageNum
-                        ? 'bg-primary text-white border-primary'
-                        : 'bg-surface text-text border-border hover:bg-primary/10 disabled:opacity-50'
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              })}
+        {pagination && pagination.totalPages > 1 && !searchQuery && (
+          <div className="mt-12">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={pagination.totalPages}
+              onPageChange={(page) => {
+                setCurrentPage(page);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              disabled={searching || loading}
+            />
+            
+            {/* Pagination Info */}
+            <div className="mt-4 text-center text-sm text-textSecondary">
+              Showing {((currentPage - 1) * pagination.limit) + 1} to {Math.min(currentPage * pagination.limit, pagination.total)} of {pagination.total} recipes
             </div>
-
-            {/* Next Button */}
-            <button
-              onClick={() => setCurrentPage(prev => Math.min(pagination.totalPages, prev + 1))}
-              disabled={currentPage === pagination.totalPages || searching}
-              className="px-4 py-2 rounded-lg border border-border bg-surface text-text hover:bg-primary hover:text-white disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-surface disabled:hover:text-text transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-        )}
-
-        {/* Pagination Info */}
-        {pagination && (
-          <div className="mt-4 text-center text-sm text-textSecondary">
-            Showing {((currentPage - 1) * pagination.limit) + 1} to {Math.min(currentPage * pagination.limit, pagination.total)} of {pagination.total} recipes
           </div>
         )}
       </div>
