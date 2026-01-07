@@ -87,7 +87,7 @@ export default function MyRecipesPage() {
       const recipeList = results.map((r: any) => ({
         id: r.id,
         title: r.title,
-        description: r.description || '',
+        description: r.description,
         image: r.image,
         prepTime: r.prepTime,
         cookTime: r.cookTime,
@@ -96,9 +96,6 @@ export default function MyRecipesPage() {
         category: r.category,
         categories: r.categories || [],
         nutrition: r.nutrition,
-        userId: r.userId || 0,
-        createdAt: r.createdAt || new Date().toISOString(),
-        updatedAt: r.updatedAt || new Date().toISOString(),
       }));
 
       setRecipes(recipeList);

@@ -5,13 +5,23 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { clientApi } from '@/lib/client-api';
 
-interface Ingredient {
-  ingredientId: number;
-  quantity: number;
+interface RecipeIngredient {
+  id: number;
+  quantity: string | number;
   unit: string;
-  ingredient?: {
+  recipeId: number;
+  ingredientId: number;
+  ingredient: {
     id: number;
     name: string;
+    description?: string;
+    unit?: string;
+    imageUrl?: string;
+    isActive: boolean;
+    nutritionalInfo?: any;
+    createdAt?: string;
+    updatedAt?: string;
+    categoryId?: number;
   };
 }
 
@@ -19,12 +29,17 @@ interface Recipe {
   id: number;
   title: string;
   description?: string;
-  instructions?: string;
+  instructions?: string | string[];
   image?: string;
   prepTime?: number;
   cookTime?: number;
   servings?: number;
-  ingredients?: Ingredient[];
+  recipeIngredients?: RecipeIngredient[];
+  ingredients?: RecipeIngredient[]; // Legacy support
+  categories?: Array<{
+    id: number;
+    name: string;
+  }>;
   category?: {
     id: number;
     name: string;
@@ -186,7 +201,17 @@ export default function RecipeDetailPage() {
               )}
             </div>
 
-            {recipe.category && (
+            {(recipe.categories && recipe.categories.length > 0) && (
+              <div className="flex flex-wrap gap-2">
+                {recipe.categories.map((cat) => (
+                  <div key={cat.id} className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium">
+                    <span>📁</span>
+                    {cat.name}
+                  </div>
+                ))}
+              </div>
+            )}
+            {recipe.category && !recipe.categories && (
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium">
                 <span>📁</span>
                 {recipe.category.name}
@@ -204,23 +229,26 @@ export default function RecipeDetailPage() {
                 <span>🥘</span>
                 Ingredients
               </h2>
-              {recipe.ingredients && recipe.ingredients.length > 0 ? (
-                <ul className="space-y-3">
-                  {recipe.ingredients.map((ing, idx) => (
-                    <li key={idx} className="flex items-start gap-3 text-textSecondary">
-                      <span className="text-primary mt-1">•</span>
-                      <span>
-                        <span className="font-semibold text-text">
-                          {ing.quantity} {ing.unit}
-                        </span>{' '}
-                        {ing.ingredient?.name || `Ingredient #${ing.ingredientId}`}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-textSecondary">No ingredients listed</p>
-              )}
+              {(() => {
+                const ingredients = recipe.recipeIngredients || recipe.ingredients || [];
+                return ingredients.length > 0 ? (
+                  <ul className="space-y-3">
+                    {ingredients.map((ing) => (
+                      <li key={ing.id} className="flex items-start gap-3 text-textSecondary">
+                        <span className="text-primary mt-1">•</span>
+                        <span>
+                          <span className="font-semibold text-text">
+                            {ing.quantity} {ing.unit}
+                          </span>{' '}
+                          {ing.ingredient?.name || `Ingredient #${ing.ingredientId}`}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-textSecondary">No ingredients listed</p>
+                );
+              })()}
             </div>
           </div>
 
@@ -233,9 +261,22 @@ export default function RecipeDetailPage() {
               </h2>
               {recipe.instructions ? (
                 <div className="prose max-w-none">
-                  <div className="text-textSecondary whitespace-pre-wrap leading-relaxed">
-                    {recipe.instructions}
-                  </div>
+                  {Array.isArray(recipe.instructions) ? (
+                    <ol className="space-y-4">
+                      {recipe.instructions.map((step, index) => (
+                        <li key={index} className="flex gap-4 text-textSecondary">
+                          <span className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center">
+                            {index + 1}
+                          </span>
+                          <span className="flex-1 leading-relaxed">{step}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  ) : (
+                    <div className="text-textSecondary whitespace-pre-wrap leading-relaxed">
+                      {recipe.instructions}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <p className="text-textSecondary">No instructions provided</p>
