@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { api, getClientErrorMessage } from '@/lib/client-api';
 import { Recipe, PaginatedRecipesResponse } from '@/lib/types/recipe';
 import { useRouter } from 'next/navigation';
+import { Pagination } from '@/components/ui/pagination';
 
 export default function MyRecipesPage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -17,12 +18,32 @@ export default function MyRecipesPage() {
   const [hasPreviousPage, setHasPreviousPage] = useState(false);
   const limit = 12;
   const router = useRouter();
+  const prevSearchTermRef = useRef<string>('');
 
   // Fetch recipes with pagination (when no search term)
   useEffect(() => {
-    if (!searchTerm) {
-      fetchRecipes();
+    // Only fetch if there's no search term
+    // If search term was cleared, reset to page 1 first
+    const hasNoSearch = !searchTerm || !searchTerm.trim().length;
+    
+    if (!hasNoSearch) {
+      // If there's a search term, don't fetch paginated recipes
+      prevSearchTermRef.current = searchTerm;
+      return;
     }
+    
+    const prevHadSearch = prevSearchTermRef.current && prevSearchTermRef.current.trim().length > 0;
+    
+    // Only reset page when transitioning FROM search TO no search
+    if (prevHadSearch && hasNoSearch && page !== 1) {
+      prevSearchTermRef.current = searchTerm;
+      setPage(1);
+      return; // Will re-run with page=1
+    }
+    
+    prevSearchTermRef.current = searchTerm;
+    fetchRecipes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, searchTerm]);
 
   // Vector search with debounce (when search term exists)
@@ -87,15 +108,20 @@ export default function MyRecipesPage() {
       const recipeList = results.map((r: any) => ({
         id: r.id,
         title: r.title,
-        description: r.description,
+        description: r.description || '',
         image: r.image,
         prepTime: r.prepTime,
         cookTime: r.cookTime,
         servings: r.servings,
         similarity: r.similarity,
         category: r.category,
-        categories: r.categories || [],
+        categories: Array.isArray(r.categories) ? r.categories.map((cat: any) => 
+          typeof cat === 'object' && cat !== null ? cat : { id: 0, name: cat }
+        ) : [],
         nutrition: r.nutrition,
+        userId: r.userId,
+        createdAt: r.createdAt,
+        updatedAt: r.updatedAt,
       }));
 
       setRecipes(recipeList);
@@ -226,9 +252,14 @@ export default function MyRecipesPage() {
                         🍽️
                       </div>
                     )}
-                    {recipe.category && (
+                    {recipe.categories && recipe.categories.length > 0 && (
                       <div className="absolute top-3 right-3 bg-surface/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-text">
-                        {recipe.category.name}
+                        {typeof recipe.categories[0] === 'object' ? recipe.categories[0].name : recipe.categories[0]}
+                      </div>
+                    )}
+                    {recipe.category && !recipe.categories && (
+                      <div className="absolute top-3 right-3 bg-surface/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-text">
+                        {typeof recipe.category === 'object' ? recipe.category.name : recipe.category}
                       </div>
                     )}
                   </div>
@@ -277,36 +308,19 @@ export default function MyRecipesPage() {
             </div>
 
             {/* Pagination */}
-            <div className="flex justify-center items-center gap-4">
-              <button
-                onClick={() => setPage(page - 1)}
-                disabled={!hasPreviousPage}
-                className={`px-4 py-2 rounded-xl font-medium transition-colors ${
-                  hasPreviousPage
-                    ? 'bg-surface text-text hover:bg-surfaceSecondary border border-border'
-                    : 'bg-surfaceSecondary text-textLight cursor-not-allowed'
-                }`}
-              >
-                ← Previous
-              </button>
-
-              <div className="text-sm text-textSecondary">
-                Page <span className="font-semibold">{page}</span> of{' '}
-                <span className="font-semibold">{totalPages}</span>
+            {totalPages > 1 && !searchTerm && (
+              <div className="mt-8">
+                <Pagination
+                  currentPage={page}
+                  totalPages={totalPages}
+                  onPageChange={(newPage) => {
+                    setPage(newPage);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  disabled={loading || searching}
+                />
               </div>
-
-              <button
-                onClick={() => setPage(page + 1)}
-                disabled={!hasNextPage}
-                className={`px-4 py-2 rounded-xl font-medium transition-colors ${
-                  hasNextPage
-                    ? 'bg-surface text-text hover:bg-surfaceSecondary border border-border'
-                    : 'bg-surfaceSecondary text-textLight cursor-not-allowed'
-                }`}
-              >
-                Next →
-              </button>
-            </div>
+            )}
           </>
         )}
       </main>
