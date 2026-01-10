@@ -41,6 +41,8 @@ export default function RecipePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);
   const [searchDuration, setSearchDuration] = useState<number | null>(null);
+  const [useAIReranking, setUseAIReranking] = useState(true);
+  const [wasRerankedWithLLM, setWasRerankedWithLLM] = useState(false);
   const router = useRouter();
   const prevSearchQueryRef = useRef<string>('');
 
@@ -113,9 +115,9 @@ export default function RecipePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, searchQuery, router, recipesPerPage]);
 
-  // Search recipes using vector search ONLY
+  // Search recipes using hybrid search (vector + text combined)
   // CRITICAL: This is the ONLY place where search happens
-  // NEVER use /recipes-secondary/paginated for search - only use /recipes-secondary/search/vector
+  // Uses /recipes-secondary/search/hybrid for best results
   useEffect(() => {
     const hasSearchQuery = searchQuery && searchQuery.trim().length > 0;
     const prevHadSearchQuery = prevSearchQueryRef.current && prevSearchQueryRef.current.trim().length > 0;
@@ -139,31 +141,30 @@ export default function RecipePage() {
     }
 
     console.log('[Search Effect] Search query detected:', searchQuery);
-    console.log('[Search Effect] Using VECTOR SEARCH ONLY - /recipes-secondary/search/vector');
+    console.log('[Search Effect] Using HYBRID SEARCH - /recipes-secondary/search/hybrid');
     
     const timeoutId = setTimeout(async () => {
       try {
         setSearching(true);
         setSearchDuration(null);
         setError(null);
-        console.log('[Vector Search] Starting vector search for:', searchQuery);
+        console.log('[Hybrid Search] Starting hybrid search for:', searchQuery);
         
-        // CRITICAL: Always use vector search endpoint - NEVER use paginated for search
+        // CRITICAL: Always use hybrid search endpoint for best results
         const startTime = Date.now();
-        console.log('[Vector Search] Calling /recipes-secondary/search/vector (NOT paginated)');
+        console.log('[Hybrid Search] Calling /recipes-secondary/search/hybrid');
         
         try {
           const result = await api.vectorSearchRecipes(searchQuery, {
             limit: recipesPerPage,
-            minSimilarity: 0.0,
-            includeCategories: true,
-            includeIngredients: false,
+            useLLM: useAIReranking,
           });
           
-          console.log('[Vector Search] Response:', result);
+          console.log('[Hybrid Search] Response:', result);
           
           const duration = Date.now() - startTime;
-          setSearchDuration(duration);
+          setSearchDuration(result.meta?.durationMs || duration);
+          setWasRerankedWithLLM(result.meta?.rerankedWithLLM || false);
           
           // Handle different response structures
           let results: any[] = [];
@@ -172,14 +173,14 @@ export default function RecipePage() {
             // Direct array response
             results = result;
           } else if (result?.results && Array.isArray(result.results)) {
-            // Standard vector search response
+            // Standard hybrid search response
             results = result.results;
           }
           
-          console.log('[Vector Search] Extracted results:', results.length);
+          console.log('[Hybrid Search] Extracted results:', results.length);
           
           if (results.length > 0) {
-            // Convert vector search results to Recipe format
+            // Convert hybrid search results to Recipe format
             const recipeList = results.map((r: any) => ({
               id: r.id,
               title: r.title,
@@ -188,30 +189,31 @@ export default function RecipePage() {
               prepTime: r.prepTime,
               cookTime: r.cookTime,
               servings: r.servings,
-              similarity: r.similarity,
+              // Use combinedScore from hybrid search (or fall back to similarity for backward compat)
+              similarity: r.combinedScore || r.similarity || r.vectorScore || 0,
               categories: Array.isArray(r.categories) ? r.categories.map((cat: any) => 
                 typeof cat === 'object' && cat !== null ? cat : { id: 0, name: cat }
               ) : [],
               category: r.category,
             }));
             
-            console.log('[Vector Search] Mapped recipes:', recipeList.length);
+            console.log('[Hybrid Search] Mapped recipes:', recipeList.length);
             setRecipes(recipeList);
             setPagination({
-              total: result.meta?.count || recipeList.length,
+              total: result.count || result.meta?.count || recipeList.length,
               page: 1,
               limit: recipesPerPage,
-              totalPages: Math.ceil((result.meta?.count || recipeList.length) / recipesPerPage),
+              totalPages: Math.ceil((result.count || result.meta?.count || recipeList.length) / recipesPerPage),
             });
           } else {
-            console.log('[Vector Search] No results found. Full response:', result);
+            console.log('[Hybrid Search] No results found. Full response:', result);
             setRecipes([]);
             setPagination(null);
           }
         } catch (searchError: any) {
-          console.error('[Vector Search] Error:', searchError);
-          console.error('[Vector Search] Error response:', searchError.response?.data);
-          setError(searchError.response?.data?.message || searchError.message || 'Vector search failed');
+          console.error('[Hybrid Search] Error:', searchError);
+          console.error('[Hybrid Search] Error response:', searchError.response?.data);
+          setError(searchError.response?.data?.message || searchError.message || 'Search failed');
           setRecipes([]);
           setPagination(null);
         }
@@ -235,7 +237,7 @@ export default function RecipePage() {
     // NOTE: This effect ONLY uses /recipes-secondary/search/vector
     // NEVER uses /recipes-secondary/paginated for search
     // NOTE: currentPage is NOT in dependencies to avoid conflicts with pagination
-  }, [searchQuery, router, recipesPerPage]);
+  }, [searchQuery, router, recipesPerPage, useAIReranking]);
 
   if (loading) {
     return (
@@ -281,37 +283,58 @@ export default function RecipePage() {
           </Link>
         </div>
 
-        {/* Search Bar - Vector Search Only */}
+        {/* Search Bar - Hybrid Search (AI + Text) */}
         <div className="mb-8">
-          <div className="relative max-w-2xl">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <svg className="h-5 w-5 text-textLight" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-            <input
-              type="text"
-              placeholder="Search recipes semantically (e.g., 'healthy breakfast', 'quick dinner', 'chicken')..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-surface text-text placeholder-textLight"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute inset-y-0 right-0 pr-4 flex items-center text-textLight hover:text-text transition-colors"
-                disabled={searching}
-              >
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-1 max-w-2xl">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-textLight" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-              </button>
-            )}
-            {searching && (
-              <div className="absolute inset-y-0 right-12 pr-4 flex items-center pointer-events-none">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
               </div>
-            )}
+              <input
+                type="text"
+                placeholder="Search recipes semantically (e.g., 'healthy breakfast', 'quick dinner', 'chicken')..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-surface text-text placeholder-textLight"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-textLight hover:text-text transition-colors"
+                  disabled={searching}
+                >
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+              {searching && (
+                <div className="absolute inset-y-0 right-12 pr-4 flex items-center pointer-events-none">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                </div>
+              )}
+            </div>
+            
+            {/* AI Reranking Toggle */}
+            <div className="flex items-center gap-3 px-4 py-2 bg-surface border border-border rounded-xl">
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={useAIReranking}
+                  onChange={(e) => setUseAIReranking(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+              </label>
+              <div className="flex flex-col">
+                <span className="text-sm font-medium text-text">AI Reranking</span>
+                <span className="text-xs text-textSecondary">
+                  {useAIReranking ? 'Enhanced results with GPT' : 'Faster, basic ranking'}
+                </span>
+              </div>
+            </div>
           </div>
           
           {searchQuery && !searching && (
@@ -321,14 +344,14 @@ export default function RecipePage() {
               </p>
               {searchDuration !== null && (
                 <p className="text-xs">
-                  (AI search took {searchDuration}ms)
+                  (Search took {searchDuration}ms{wasRerankedWithLLM ? ' with AI reranking' : ''})
                 </p>
               )}
             </div>
           )}
           {searching && (
             <p className="text-sm text-textSecondary mt-2">
-              Searching with AI vector search...
+              Searching{useAIReranking ? ' with AI reranking' : ''}...
             </p>
           )}
         </div>
@@ -379,7 +402,7 @@ export default function RecipePage() {
                   {recipe.categories && recipe.categories.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-4">
                       {recipe.categories.slice(0, 3).map((cat, idx) => (
-                        <span key={typeof cat === 'object' ? cat.id : idx} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                        <span key={idx} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
                           {typeof cat === 'object' ? cat.name : cat}
                         </span>
                       ))}
