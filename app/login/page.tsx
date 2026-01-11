@@ -16,7 +16,7 @@ function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
 
-  const returnTo = params?.get('returnTo') || '/myrecipes';
+  const returnTo = params?.get('returnTo') || '/recipe';
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();

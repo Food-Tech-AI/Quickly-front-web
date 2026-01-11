@@ -93,9 +93,6 @@ export default function MyRecipesPage() {
     try {
       const result = await api.vectorSearchRecipes(searchTerm, {
         limit: limit,
-        minSimilarity: 0.0,
-        includeCategories: true,
-        includeIngredients: false,
       });
 
       let results: any[] = [];
@@ -113,7 +110,8 @@ export default function MyRecipesPage() {
         prepTime: r.prepTime,
         cookTime: r.cookTime,
         servings: r.servings,
-        similarity: r.similarity,
+        // Use combinedScore from hybrid search (or fall back to similarity for backward compat)
+        similarity: r.combinedScore || r.similarity || r.vectorScore || 0,
         category: r.category,
         categories: Array.isArray(r.categories) ? r.categories.map((cat: any) => 
           typeof cat === 'object' && cat !== null ? cat : { id: 0, name: cat }

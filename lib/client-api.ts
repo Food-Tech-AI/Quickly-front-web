@@ -75,7 +75,7 @@ clientApi.interceptors.response.use(
   },
   (error) => {
     if (error.response) {
-      console.error(`[Client API Error] ${error.response.status} - ${error.config?.url}`);
+      // console.error(`[Client API Error] ${error.response.status} - ${error.config?.url}`);
       
       // Handle 401 - Unauthorized (clear token and redirect to login)
       if (error.response.status === 401) {
@@ -202,56 +202,64 @@ export const api = {
   },
 
   /**
-   * Vector search recipes (semantic search using embeddings)
+   * Hybrid search recipes (combines vector similarity + text search for best results)
+   * Uses the hybrid endpoint which gives better results than pure vector search
+   * Now supports LLM reranking for even better semantic understanding
    */
   vectorSearchRecipes: async (query: string, options?: {
     limit?: number;
     minSimilarity?: number;
     includeCategories?: boolean;
     includeIngredients?: boolean;
+    vectorWeight?: number;
+    textWeight?: number;
+    useLLM?: boolean;
   }): Promise<{
     success: boolean;
-    query: {
-      original: string;
-      limit: number;
-      minSimilarity: number;
+    query: string;
+    count: number;
+    meta: {
+      vectorWeight: number;
+      textWeight: number;
+      durationMs: number;
+      rerankedWithLLM?: boolean;
     };
     results: Array<{
       id: number;
       title: string;
       description?: string;
       image?: string;
-      similarity: number;
-      rank: number;
+      vectorScore: number;
+      textScore: number;
+      combinedScore: number;
+      matchType: 'hybrid' | 'vector' | 'text';
       categories: string[];
-      ingredients: Array<{
-        name: string;
-        quantity: number;
-        unit: string;
-      }>;
       prepTime?: number;
       cookTime?: number;
       servings?: number;
+      canonical_title?: string;
+      canonical_ingredients?: string[];
+      // LLM reranking fields (only present when useLLM=true)
+      llmScore?: number;
+      llmReasoning?: string;
+      finalScore?: number;
+      reranked?: boolean;
     }>;
-    meta: {
-      count: number;
-      durationMs: number;
-    };
   }> => {
-    console.log('[API] Vector search request:', {
+    console.log('[API] Hybrid search request:', {
       query,
       options,
-      url: '/recipes-secondary/search/vector'
+      url: '/recipes-secondary/search/hybrid'
     });
     
     try {
-      const response = await clientApi.get('/recipes-secondary/search/vector', {
+      const response = await clientApi.get('/recipes-secondary/search/hybrid', {
         params: {
           q: query,
           limit: options?.limit || 10,
-          minSimilarity: options?.minSimilarity || 0.0,
-          includeCategories: options?.includeCategories !== false,
-          includeIngredients: options?.includeIngredients !== false,
+          vectorWeight: options?.vectorWeight || 0.5,
+          textWeight: options?.textWeight || 0.5,
+          useLLM: options?.useLLM ?? true,  // Enable LLM reranking by default
         },
         headers: {
           'Cache-Control': 'no-cache',
@@ -259,7 +267,7 @@ export const api = {
         }
       });
       
-      console.log('[API] Vector search response:', {
+      console.log('[API] Hybrid search response:', {
         status: response.status,
         data: response.data,
         resultsCount: response.data?.results?.length || 0
@@ -267,12 +275,26 @@ export const api = {
       
       return response.data;
     } catch (error: any) {
-      console.error('[API] Vector search error:', {
+      console.error('[API] Hybrid search error:', {
         message: error.message,
         response: error.response?.data,
         status: error.response?.status
       });
-      throw error;
+      
+      // Fallback to quick search if hybrid fails
+      console.log('[API] Falling back to quick search...');
+      try {
+        const fallbackResponse = await clientApi.get('/recipes-secondary/search/quick', {
+          params: {
+            q: query,
+            limit: options?.limit || 10,
+          }
+        });
+        return fallbackResponse.data;
+      } catch (fallbackError) {
+        console.error('[API] Quick search fallback also failed:', fallbackError);
+        throw error; // Throw original error
+      }
     }
   },
 
