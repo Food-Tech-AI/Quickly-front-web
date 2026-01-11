@@ -199,11 +199,14 @@ export default function RecipePage() {
             
             console.log('[Hybrid Search] Mapped recipes:', recipeList.length);
             setRecipes(recipeList);
+            // For search results, total is the number of results returned
+            // (hybrid search doesn't provide a total count, just the results)
+            const totalCount = (result as any).count || recipeList.length;
             setPagination({
-              total: result.count || result.meta?.count || recipeList.length,
+              total: totalCount,
               page: 1,
               limit: recipesPerPage,
-              totalPages: Math.ceil((result.count || result.meta?.count || recipeList.length) / recipesPerPage),
+              totalPages: Math.ceil(totalCount / recipesPerPage),
             });
           } else {
             console.log('[Hybrid Search] No results found. Full response:', result);
