@@ -348,4 +348,22 @@ export const api = {
     const response = await clientApi.post('/recipes-secondary', data);
     return response.data;
   },
+
+  /**
+   * Generate image for recipe
+   * Timeout: 2 minutes (120 seconds) for AI image generation
+   */
+  generateRecipeImage: async (recipeId: number): Promise<any> => {
+    const response = await clientApi.post(
+      `/recipes-secondary/${recipeId}/generate-image`,
+      {},
+      {
+        timeout: 120000, // 2 minutes timeout
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    return response.data;
+  },
 };
