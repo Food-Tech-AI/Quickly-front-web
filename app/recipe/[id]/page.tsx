@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { clientApi } from '@/lib/client-api';
 import { api } from '@/lib/client-api';
+import { formatQuantity, calculateScaledQuantity, getDefaultServings, isScalableUnit } from '@/lib/recipe-utils';
 
 type Language = 'en' | 'ar' | 'fr';
 
@@ -85,8 +86,49 @@ export default function RecipeDetailPage() {
   const [generatingImage, setGeneratingImage] = useState(false);
   const [imageGenerationError, setImageGenerationError] = useState<string | null>(null);
   const [generationProgress, setGenerationProgress] = useState(0);
+  const [selectedServings, setSelectedServings] = useState<number | null>(null);
+  
+  // Product matching state
+  const [productMatches, setProductMatches] = useState<{
+    matches: Array<{
+      ingredient_name: string;
+      ingredient_id?: number;
+      requested_quantity: number;
+      requested_unit: string;
+      ranked_products: Array<{
+        id: number;
+        label: string;
+        brand?: string | null;
+        category?: string | null;
+        image?: string | null;
+        product_weight?: number | null;
+        product_unit?: string | null;
+        price?: number | null;
+        currency?: string | null;
+        similarity_score: number;
+        rank: number;
+        quantity_to_buy: number;
+        match_reason: string;
+      }>;
+    }>;
+  } | null>(null);
+  const [loadingProducts, setLoadingProducts] = useState(false);
+  const [productError, setProductError] = useState<string | null>(null);
+  const [expandedIngredient, setExpandedIngredient] = useState<string | null>(null);
 
   const recipeId = params?.id as string;
+
+  // Get the default servings from recipe or fallback to 2
+  const defaultServings = useMemo(() => getDefaultServings(recipe?.servings), [recipe?.servings]);
+  
+  // Current servings (user selected or default)
+  const currentServings = selectedServings ?? defaultServings;
+
+  // Helper to get scaled quantity for display
+  const getScaledQuantity = (quantity: string | number, unit: string) => {
+    const scaled = calculateScaledQuantity(quantity, defaultServings, currentServings, unit);
+    return formatQuantity(scaled, unit);
+  };
 
   // Helper function to get text in selected language
   const getText = (en?: string, ar?: string, fr?: string) => {
@@ -233,6 +275,49 @@ export default function RecipeDetailPage() {
 
     fetchRecipe();
   }, [recipeId, router]);
+
+  // Fetch product matches for recipe ingredients
+  useEffect(() => {
+    async function fetchProductMatches() {
+      if (!recipe) return;
+      
+      const ingredients = recipe.recipeIngredients || recipe.ingredients || [];
+      if (ingredients.length === 0) return;
+
+      setLoadingProducts(true);
+      setProductError(null);
+
+      try {
+        // Prepare ingredients with French names for matching
+        const ingredientsToMatch = ingredients.map((ing) => ({
+          name_fr: ing.ingredient.name_fr || ing.ingredient.name,
+          quantity: typeof ing.quantity === 'number' ? ing.quantity : parseFloat(String(ing.quantity)) || 1,
+          unit: ing.unit || '',
+          ingredient_id: ing.ingredientId,
+        }));
+
+        const result = await api.matchIngredientsToProducts(ingredientsToMatch, {
+          top_k: 3,
+          use_gpt_ranking: true,
+        });
+
+        setProductMatches(result);
+      } catch (err: any) {
+        console.error('Error fetching product matches:', err);
+        setProductError(
+          language === 'ar'
+            ? 'فشل في تحميل المنتجات المطابقة'
+            : language === 'fr'
+            ? 'Échec du chargement des produits correspondants'
+            : 'Failed to load matching products'
+        );
+      } finally {
+        setLoadingProducts(false);
+      }
+    }
+
+    fetchProductMatches();
+  }, [recipe, language]);
 
   if (loading) {
     return (
@@ -480,17 +565,41 @@ export default function RecipeDetailPage() {
                   <p className="text-2xl font-bold text-text">{recipe.cookTime} {language === 'ar' ? 'د' : language === 'fr' ? 'min' : 'min'}</p>
                 </div>
               )}
-              {recipe.servings && (
-                <div className="bg-surface rounded-xl p-5 border border-border hover:shadow-md transition-shadow">
+              <div className="bg-surface rounded-xl p-5 border border-border hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-2 text-textLight mb-2">
                     <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                     <span className="text-sm font-medium">{language === 'ar' ? 'الوجبات' : language === 'fr' ? 'Portions' : 'Servings'}</span>
                   </div>
-                  <p className="text-2xl font-bold text-text">{recipe.servings}</p>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setSelectedServings(Math.max(1, currentServings - 1))}
+                      disabled={currentServings <= 1}
+                      className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center hover:bg-primary hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      aria-label={language === 'ar' ? 'تقليل الوجبات' : language === 'fr' ? 'Diminuer les portions' : 'Decrease servings'}
+                    >
+                      −
+                    </button>
+                    <span className="text-2xl font-bold text-text min-w-[2rem] text-center">{currentServings}</span>
+                    <button
+                      onClick={() => setSelectedServings(Math.min(20, currentServings + 1))}
+                      disabled={currentServings >= 20}
+                      className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center hover:bg-primary hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      aria-label={language === 'ar' ? 'زيادة الوجبات' : language === 'fr' ? 'Augmenter les portions' : 'Increase servings'}
+                    >
+                      +
+                    </button>
+                  </div>
+                  {recipe.servings && currentServings !== defaultServings && (
+                    <button
+                      onClick={() => setSelectedServings(null)}
+                      className="mt-2 text-xs text-primary hover:underline"
+                    >
+                      {language === 'ar' ? `إعادة إلى ${defaultServings}` : language === 'fr' ? `Réinitialiser à ${defaultServings}` : `Reset to ${defaultServings}`}
+                    </button>
+                  )}
                 </div>
-              )}
               {totalTime > 0 && (
                 <div className="bg-surface rounded-xl p-5 border border-border hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-2 text-textLight mb-2">
@@ -556,19 +665,113 @@ export default function RecipeDetailPage() {
               </h2>
               {(() => {
                 const ingredients = recipe.recipeIngredients || recipe.ingredients || [];
+                
+                // Helper to find product matches for an ingredient
+                const getProductsForIngredient = (ingredientId: number) => {
+                  if (!productMatches) return null;
+                  return productMatches.matches.find(m => m.ingredient_id === ingredientId);
+                };
+
                 return ingredients.length > 0 ? (
                   <ul className={`space-y-4 ${language === 'ar' ? 'text-right' : ''}`} dir={language === 'ar' ? 'rtl' : 'ltr'}>
-                    {ingredients.map((ing) => (
-                      <li key={ing.id} className="flex items-start gap-3 text-textSecondary group">
-                        <span className="text-primary mt-1.5 font-bold group-hover:scale-110 transition-transform">•</span>
-                        <span className="flex-1">
-                          <span className="font-semibold text-text">
-                            {ing.quantity} {ing.unit}
-                          </span>{' '}
-                          <span className="text-textSecondary">{getIngredientName(ing.ingredient)}</span>
-                        </span>
-                      </li>
-                    ))}
+                    {ingredients.map((ing) => {
+                      const matches = getProductsForIngredient(ing.ingredientId);
+                      const isExpanded = expandedIngredient === String(ing.ingredientId);
+                      
+                      return (
+                        <li key={ing.id} className="group">
+                          <div 
+                            className={`flex items-start gap-3 text-textSecondary cursor-pointer hover:bg-primary/5 rounded-lg p-2 -m-2 transition-colors ${matches && matches.ranked_products.length > 0 ? '' : ''}`}
+                            onClick={() => {
+                              if (matches && matches.ranked_products.length > 0) {
+                                setExpandedIngredient(isExpanded ? null : String(ing.ingredientId));
+                              }
+                            }}
+                          >
+                            <span className="text-primary mt-1.5 font-bold group-hover:scale-110 transition-transform">•</span>
+                            <span className="flex-1">
+                              <span className="font-semibold text-text">
+                                {getScaledQuantity(ing.quantity, ing.unit)} {ing.unit}
+                              </span>{' '}
+                              <span className="text-textSecondary">{getIngredientName(ing.ingredient)}</span>
+                              {matches && matches.ranked_products.length > 0 && (
+                                <span className="ml-2 text-xs text-primary inline-flex items-center gap-1">
+                                  🛒 {matches.ranked_products.length} {language === 'fr' ? 'produits' : language === 'ar' ? 'منتجات' : 'products'}
+                                  <span className="text-xs">{isExpanded ? '▼' : '▶'}</span>
+                                </span>
+                              )}
+                            </span>
+                          </div>
+                          
+                          {/* Product cards when expanded */}
+                          {isExpanded && matches && (
+                            <div className="mt-3 ml-6 space-y-2">
+                              {matches.ranked_products.map((product, idx) => (
+                                <div 
+                                  key={product.id} 
+                                  className="flex items-center gap-3 p-3 bg-gradient-to-r from-gray-50 to-white rounded-lg border border-gray-200 hover:border-primary/50 hover:shadow-sm transition-all"
+                                >
+                                  {/* Product Image */}
+                                  <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-gray-100">
+                                    {product.image ? (
+                                      <img 
+                                        src={product.image} 
+                                        alt={product.label}
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                          (e.target as HTMLImageElement).src = '/placeholder-product.png';
+                                        }}
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center text-2xl">📦</div>
+                                    )}
+                                  </div>
+                                  
+                                  {/* Product Info */}
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-start justify-between gap-2">
+                                      <div className="min-w-0">
+                                        <p className="font-medium text-sm text-text truncate" title={product.label}>
+                                          {product.label}
+                                        </p>
+                                        {product.brand && (
+                                          <p className="text-xs text-textSecondary">{product.brand}</p>
+                                        )}
+                                      </div>
+                                      <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">
+                                        {idx + 1}
+                                      </span>
+                                    </div>
+                                    
+                                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                      {product.price && (
+                                        <span className="text-sm font-bold text-primary">
+                                          {product.price.toFixed(2)} {product.currency || 'MAD'}
+                                        </span>
+                                      )}
+                                      {product.product_weight && product.product_unit && (
+                                        <span className="text-xs text-textSecondary bg-gray-100 px-2 py-0.5 rounded">
+                                          {product.product_weight} {product.product_unit}
+                                        </span>
+                                      )}
+                                      <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded">
+                                        {language === 'fr' ? 'Qté:' : language === 'ar' ? 'الكمية:' : 'Qty:'} {product.quantity_to_buy}
+                                      </span>
+                                    </div>
+                                    
+                                    {product.match_reason && (
+                                      <p className="text-xs text-textSecondary mt-1 line-clamp-2" title={product.match_reason}>
+                                        💡 {product.match_reason}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
                 ) : (
                   <p className={`text-textSecondary ${language === 'ar' ? 'text-right' : ''}`} dir={language === 'ar' ? 'rtl' : 'ltr'}>
@@ -576,6 +779,50 @@ export default function RecipeDetailPage() {
                   </p>
                 );
               })()}
+              
+              {/* Product Loading State */}
+              {loadingProducts && (
+                <div className="mt-4 p-4 bg-primary/5 rounded-lg flex items-center gap-3">
+                  <div className="animate-spin w-5 h-5 border-2 border-primary border-t-transparent rounded-full"></div>
+                  <span className="text-sm text-textSecondary">
+                    {language === 'ar' 
+                      ? 'جاري تحميل المنتجات المطابقة...' 
+                      : language === 'fr' 
+                      ? 'Chargement des produits correspondants...' 
+                      : 'Loading matching products...'}
+                  </span>
+                </div>
+              )}
+              
+              {/* Product Error State */}
+              {productError && (
+                <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-lg text-sm">
+                  {productError}
+                </div>
+              )}
+              
+              {/* Products Found Summary */}
+              {productMatches && !loadingProducts && (
+                <div className="mt-4 pt-4 border-t border-border">
+                  <p className="text-xs text-textSecondary flex items-center gap-2">
+                    <span>🛒</span>
+                    <span>
+                      {language === 'ar' 
+                        ? `${productMatches.matches.filter(m => m.ranked_products.length > 0).length} مكونات لها منتجات مطابقة` 
+                        : language === 'fr' 
+                        ? `${productMatches.matches.filter(m => m.ranked_products.length > 0).length} ingrédients avec produits` 
+                        : `${productMatches.matches.filter(m => m.ranked_products.length > 0).length} ingredients with matching products`}
+                    </span>
+                  </p>
+                  <p className="text-xs text-textSecondary mt-1">
+                    {language === 'ar' 
+                      ? 'اضغط على المكون لرؤية المنتجات' 
+                      : language === 'fr' 
+                      ? 'Cliquez sur un ingrédient pour voir les produits' 
+                      : 'Click an ingredient to see products'}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 

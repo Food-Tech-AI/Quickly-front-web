@@ -6,6 +6,12 @@ import { useRouter } from 'next/navigation';
 import { clientApi, api } from '@/lib/client-api';
 import { Pagination } from '@/components/ui/pagination';
 
+interface CategoryWithCount {
+  id: number;
+  name: string;
+  recipeCount: number;
+}
+
 interface Category {
   id: number;
   name: string;
@@ -43,10 +49,37 @@ export default function RecipePage() {
   const [searchDuration, setSearchDuration] = useState<number | null>(null);
   const [useAIReranking, setUseAIReranking] = useState(true);
   const [wasRerankedWithLLM, setWasRerankedWithLLM] = useState(false);
+  
+  // Category filter state
+  const [categories, setCategories] = useState<CategoryWithCount[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  
   const router = useRouter();
   const prevSearchQueryRef = useRef<string>('');
 
   const recipesPerPage = 12;
+
+  // Fetch categories on mount
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        setLoadingCategories(true);
+        const data = await api.getCategoriesWithCounts();
+        // Sort by recipe count (descending) and filter out categories with 0 recipes
+        const sortedCategories = data
+          .filter(cat => cat.recipeCount > 0)
+          .sort((a, b) => b.recipeCount - a.recipeCount);
+        setCategories(sortedCategories);
+      } catch (err: any) {
+        console.error('Error fetching categories:', err);
+        // Don't show error for categories, just hide the filter
+      } finally {
+        setLoadingCategories(false);
+      }
+    }
+    fetchCategories();
+  }, []);
 
   // Fetch recipes with pagination on initial load and page change
   // NOTE: This is ONLY for loading all recipes when there's NO search query
@@ -69,13 +102,14 @@ export default function RecipePage() {
       try {
         setLoading(true);
         setError(null);
-        console.log('[Load] Fetching page', currentPage, '- using paginated endpoint');
+        console.log('[Load] Fetching page', currentPage, '- using paginated endpoint', selectedCategory ? `with category ${selectedCategory}` : '');
         const response = await clientApi.get('/recipes-secondary/paginated', {
           params: {
             page: currentPage,
             limit: recipesPerPage,
             sortBy: 'createdAt',
-            sortOrder: 'DESC'
+            sortOrder: 'DESC',
+            categoryId: selectedCategory || undefined,
             // NOTE: No 'search' parameter - paginated endpoint should NEVER be used for search
           },
           headers: {
@@ -113,7 +147,7 @@ export default function RecipePage() {
     // NOTE: searchQuery is in dependencies to prevent fetch when search is active
     // When searchQuery exists, this effect returns early and search effect handles it
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, searchQuery, router, recipesPerPage]);
+  }, [currentPage, searchQuery, selectedCategory, router, recipesPerPage]);
 
   // Search recipes using hybrid search (vector + text combined)
   // CRITICAL: This is the ONLY place where search happens
@@ -287,7 +321,7 @@ export default function RecipePage() {
         </div>
 
         {/* Search Bar - Hybrid Search (AI + Text) */}
-        <div className="mb-8">
+        <div className="mb-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1 max-w-2xl">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -358,6 +392,48 @@ export default function RecipePage() {
             </p>
           )}
         </div>
+
+        {/* Category Filter */}
+        {!searchQuery && categories.length > 0 && (
+          <div className="mb-8">
+            <h3 className="text-sm font-medium text-textSecondary mb-3">Filter by Category</h3>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => {
+                  setSelectedCategory(null);
+                  setCurrentPage(1);
+                }}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  selectedCategory === null
+                    ? 'bg-primary text-white shadow-md'
+                    : 'bg-surface border border-border text-textSecondary hover:border-primary hover:text-primary'
+                }`}
+              >
+                All Recipes
+                {pagination && !selectedCategory && (
+                  <span className="ml-2 text-xs opacity-75">({pagination.total})</span>
+                )}
+              </button>
+              {categories.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => {
+                    setSelectedCategory(category.id);
+                    setCurrentPage(1);
+                  }}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    selectedCategory === category.id
+                      ? 'bg-primary text-white shadow-md'
+                      : 'bg-surface border border-border text-textSecondary hover:border-primary hover:text-primary'
+                  }`}
+                >
+                  {category.name}
+                  <span className="ml-2 text-xs opacity-75">({category.recipeCount})</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Recipes Grid */}
         {recipes.length > 0 ? (
