@@ -315,6 +315,18 @@ export const api = {
   },
 
   /**
+   * Get categories from secondary DB with recipe counts
+   */
+  getCategoriesWithCounts: async (): Promise<Array<{
+    id: number;
+    name: string;
+    recipeCount: number;
+  }>> => {
+    const response = await clientApi.get('/categories-secondary/with-counts');
+    return response.data;
+  },
+
+  /**
    * Get ingredients with pagination
    */
   getIngredients: async (params: {
@@ -362,6 +374,57 @@ export const api = {
         headers: {
           'Content-Type': 'application/json',
         },
+      }
+    );
+    return response.data;
+  },
+
+  /**
+   * Match recipe ingredients to e-commerce products
+   * Uses AI-powered vector search + GPT ranking
+   */
+  matchIngredientsToProducts: async (ingredients: Array<{
+    name_fr: string;
+    quantity: number;
+    unit: string;
+    ingredient_id?: number;
+  }>, options?: {
+    top_k?: number;
+    use_gpt_ranking?: boolean;
+  }): Promise<{
+    matches: Array<{
+      ingredient_name: string;
+      ingredient_id?: number;
+      requested_quantity: number;
+      requested_unit: string;
+      ranked_products: Array<{
+        id: number;
+        label: string;
+        brand?: string | null;
+        category?: string | null;
+        image?: string | null;
+        product_weight?: number | null;
+        product_unit?: string | null;
+        price?: number | null;
+        currency?: string | null;
+        similarity_score: number;
+        rank: number;
+        quantity_to_buy: number;
+        match_reason: string;
+      }>;
+    }>;
+    total_ingredients: number;
+    total_products_matched: number;
+  }> => {
+    const response = await clientApi.post(
+      '/ecommerce-products/match-ingredients',
+      {
+        ingredients,
+        top_k: options?.top_k || 3,
+        use_gpt_ranking: options?.use_gpt_ranking !== false,
+      },
+      {
+        timeout: 60000, // 1 minute timeout for AI processing
       }
     );
     return response.data;
