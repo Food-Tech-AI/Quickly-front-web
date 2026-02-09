@@ -54,6 +54,8 @@ export default function RecipePage() {
   const [categories, setCategories] = useState<CategoryWithCount[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [loadingCategories, setLoadingCategories] = useState(true);
+  const [showAllCategories, setShowAllCategories] = useState(false);
+  const categoryScrollRef = useRef<HTMLDivElement>(null);
   
   const router = useRouter();
   const prevSearchQueryRef = useRef<string>('');
@@ -393,44 +395,91 @@ export default function RecipePage() {
           )}
         </div>
 
-        {/* Category Filter */}
+        {/* Category Filter - Modern Horizontal Scroll */}
         {!searchQuery && categories.length > 0 && (
-          <div className="mb-8">
-            <h3 className="text-sm font-medium text-textSecondary mb-3">Filter by Category</h3>
-            <div className="flex flex-wrap gap-2">
+          <div className="mb-12">
+            <div className="mb-5">
+              <h2 className="text-2xl font-bold text-textPrimary mb-1">Explore Categories</h2>
+              <p className="text-textSecondary">Browse {categories.length} categories with {pagination?.total || 0} delicious recipes</p>
+            </div>
+            
+            {/* Scrollable Categories */}
+            <div className="relative">
+              {/* Scroll Buttons */}
               <button
-                onClick={() => {
-                  setSelectedCategory(null);
-                  setCurrentPage(1);
-                }}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  selectedCategory === null
-                    ? 'bg-primary text-white shadow-md'
-                    : 'bg-surface border border-border text-textSecondary hover:border-primary hover:text-primary'
-                }`}
+                onClick={() => categoryScrollRef.current?.scrollBy({ left: -400, behavior: 'smooth' })}
+                className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-10 h-10 items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 hover:bg-gray-50 hover:shadow-xl transition-all duration-200"
+                aria-label="Scroll left"
               >
-                All Recipes
-                {pagination && !selectedCategory && (
-                  <span className="ml-2 text-xs opacity-75">({pagination.total})</span>
-                )}
+                <svg className="w-5 h-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                </svg>
               </button>
-              {categories.map((category) => (
+              <button
+                onClick={() => categoryScrollRef.current?.scrollBy({ left: 400, behavior: 'smooth' })}
+                className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-10 h-10 items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 hover:bg-gray-50 hover:shadow-xl transition-all duration-200"
+                aria-label="Scroll right"
+              >
+                <svg className="w-5 h-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+
+              <div
+                ref={categoryScrollRef}
+                className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory scroll-smooth -mx-1 px-1"
+              >
+                {/* All Recipes Button */}
                 <button
-                  key={category.id}
                   onClick={() => {
-                    setSelectedCategory(category.id);
+                    setSelectedCategory(null);
                     setCurrentPage(1);
                   }}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                    selectedCategory === category.id
-                      ? 'bg-primary text-white shadow-md'
-                      : 'bg-surface border border-border text-textSecondary hover:border-primary hover:text-primary'
+                  className={`flex-shrink-0 snap-start px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${
+                    selectedCategory === null
+                      ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-105'
+                      : 'bg-white text-gray-700 border border-gray-200 hover:border-primary hover:text-primary hover:shadow-md'
                   }`}
                 >
-                  {category.name}
-                  <span className="ml-2 text-xs opacity-75">({category.recipeCount})</span>
+                  <div className="flex items-center gap-2">
+                    <span>All Recipes</span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                      selectedCategory === null 
+                        ? 'bg-white/20 text-white' 
+                        : 'bg-gray-100 text-gray-600'
+                    }`}>
+                      {pagination?.total || 0}
+                    </span>
+                  </div>
                 </button>
-              ))}
+
+                {/* Category Buttons */}
+                {categories.map((category) => (
+                  <button
+                    key={category.id}
+                    onClick={() => {
+                      setSelectedCategory(category.id);
+                      setCurrentPage(1);
+                    }}
+                    className={`flex-shrink-0 snap-start px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${
+                      selectedCategory === category.id
+                        ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-105'
+                        : 'bg-white text-gray-700 border border-gray-200 hover:border-primary hover:text-primary hover:shadow-md'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span>{category.name}</span>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                        selectedCategory === category.id 
+                          ? 'bg-white/20 text-white' 
+                          : 'bg-gray-100 text-gray-600'
+                      }`}>
+                        {category.recipeCount}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}
