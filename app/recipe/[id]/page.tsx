@@ -82,7 +82,7 @@ export default function RecipeDetailPage() {
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [language, setLanguage] = useState<Language>('en');
+  const [language, setLanguage] = useState<Language>('fr');
   const [generatingImage, setGeneratingImage] = useState(false);
   const [imageGenerationError, setImageGenerationError] = useState<string | null>(null);
   const [generationProgress, setGenerationProgress] = useState(0);

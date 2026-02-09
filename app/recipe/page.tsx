@@ -54,7 +54,9 @@ export default function RecipePage() {
   const [categories, setCategories] = useState<CategoryWithCount[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [loadingCategories, setLoadingCategories] = useState(true);
-  const [currentCategoryIndex, setCurrentCategoryIndex] = useState<number>(0);
+  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
+  const [categorySearch, setCategorySearch] = useState('');
+  const categoryDropdownRef = useRef<HTMLDivElement>(null);
   
   const router = useRouter();
   const prevSearchQueryRef = useRef<string>('');
@@ -80,6 +82,18 @@ export default function RecipePage() {
       }
     }
     fetchCategories();
+  }, []);
+
+  // Close category dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target as Node)) {
+        setCategoryDropdownOpen(false);
+        setCategorySearch('');
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   // Fetch recipes with pagination on initial load and page change
@@ -394,73 +408,164 @@ export default function RecipePage() {
           )}
         </div>
 
-        {/* Category Filter - Single Item with Navigation */}
+        {/* Category Filter - Searchable Dropdown */}
         {!searchQuery && categories.length > 0 && (
-          <div className="mb-10">
-            <div className="flex items-center justify-between bg-gradient-to-r from-primary/5 to-secondary/5 rounded-2xl p-6 border border-primary/20">
-              {/* Previous Button */}
-              <button
-                onClick={() => {
-                  const newIndex = currentCategoryIndex === 0 ? categories.length : currentCategoryIndex - 1;
-                  setCurrentCategoryIndex(newIndex);
-                  if (newIndex === 0) {
-                    setSelectedCategory(null);
-                  } else {
-                    setSelectedCategory(categories[newIndex - 1].id);
-                  }
-                  setCurrentPage(1);
-                }}
-                className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-white hover:bg-primary hover:text-white border-2 border-primary/20 hover:border-primary shadow-md hover:shadow-lg transition-all duration-200 group"
-                aria-label="Previous category"
-              >
-                <svg className="w-6 h-6 text-primary group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-
-              {/* Current Category Display */}
-              <div className="flex-1 text-center px-6">
-                {currentCategoryIndex === 0 ? (
-                  <div>
-                    <h2 className="text-2xl font-bold text-primary mb-1">All Recipes</h2>
-                    <p className="text-textSecondary font-medium">
-                      {pagination?.total || 0} recipes across all categories
-                    </p>
+          <div className="mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              {/* Label */}
+              <span className="text-sm font-medium text-textSecondary whitespace-nowrap">
+                Filter by category:
+              </span>
+              
+              {/* Dropdown */}
+              <div className="relative flex-1 max-w-md" ref={categoryDropdownRef}>
+                <button
+                  onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
+                  className="w-full flex items-center justify-between gap-3 px-4 py-3 bg-white border border-gray-200 rounded-xl hover:border-primary/50 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-left"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="text-lg">{selectedCategory ? '🏷️' : '🍽️'}</span>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-text truncate">
+                        {selectedCategory
+                          ? categories.find(c => c.id === selectedCategory)?.name || 'Category'
+                          : 'All Recipes'}
+                      </p>
+                      <p className="text-xs text-textSecondary">
+                        {selectedCategory
+                          ? `${categories.find(c => c.id === selectedCategory)?.recipeCount || 0} recipes`
+                          : `${pagination?.total || 0} recipes total`}
+                      </p>
+                    </div>
                   </div>
-                ) : (
-                  <div>
-                    <h2 className="text-2xl font-bold text-primary mb-1">
-                      {categories[currentCategoryIndex - 1]?.name}
-                    </h2>
-                    <p className="text-textSecondary font-medium">
-                      {categories[currentCategoryIndex - 1]?.recipeCount} delicious recipes
-                    </p>
+                  <svg
+                    className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${categoryDropdownOpen ? 'rotate-180' : ''}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {/* Dropdown Menu */}
+                {categoryDropdownOpen && (
+                  <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
+                    {/* Search Input */}
+                    <div className="p-3 border-b border-gray-100">
+                      <div className="relative">
+                        <svg
+                          className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        <input
+                          type="text"
+                          placeholder="Search categories..."
+                          value={categorySearch}
+                          onChange={(e) => setCategorySearch(e.target.value)}
+                          className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none"
+                          autoFocus
+                        />
+                      </div>
+                    </div>
+
+                    {/* Options List */}
+                    <div className="max-h-72 overflow-y-auto">
+                      {/* All Recipes Option */}
+                      <button
+                        onClick={() => {
+                          setSelectedCategory(null);
+                          setCurrentPage(1);
+                          setCategoryDropdownOpen(false);
+                          setCategorySearch('');
+                        }}
+                        className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
+                          selectedCategory === null
+                            ? 'bg-primary/10 text-primary'
+                            : 'hover:bg-gray-50'
+                        }`}
+                      >
+                        <span className="text-lg">🍽️</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium">All Recipes</p>
+                          <p className="text-xs text-textSecondary">{pagination?.total || 0} recipes</p>
+                        </div>
+                        {selectedCategory === null && (
+                          <svg className="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                      </button>
+
+                      {/* Divider */}
+                      <div className="h-px bg-gray-100 mx-4" />
+
+                      {/* Filtered Categories */}
+                      {categories
+                        .filter(cat =>
+                          cat.name.toLowerCase().includes(categorySearch.toLowerCase())
+                        )
+                        .map((category) => (
+                          <button
+                            key={category.id}
+                            onClick={() => {
+                              setSelectedCategory(category.id);
+                              setCurrentPage(1);
+                              setCategoryDropdownOpen(false);
+                              setCategorySearch('');
+                            }}
+                            className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
+                              selectedCategory === category.id
+                                ? 'bg-primary/10 text-primary'
+                                : 'hover:bg-gray-50'
+                            }`}
+                          >
+                            <span className="text-lg">🏷️</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium truncate">{category.name}</p>
+                              <p className="text-xs text-textSecondary">{category.recipeCount} recipes</p>
+                            </div>
+                            {selectedCategory === category.id && (
+                              <svg className="w-5 h-5 text-primary flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            )}
+                          </button>
+                        ))}
+
+                      {/* No Results */}
+                      {categorySearch &&
+                        categories.filter(cat =>
+                          cat.name.toLowerCase().includes(categorySearch.toLowerCase())
+                        ).length === 0 && (
+                          <div className="px-4 py-8 text-center text-textSecondary text-sm">
+                            No categories found for "{categorySearch}"
+                          </div>
+                        )}
+                    </div>
                   </div>
                 )}
-                <p className="text-xs text-textSecondary mt-2">
-                  Category {currentCategoryIndex + 1} of {categories.length + 1}
-                </p>
               </div>
 
-              {/* Next Button */}
-              <button
-                onClick={() => {
-                  const newIndex = currentCategoryIndex === categories.length ? 0 : currentCategoryIndex + 1;
-                  setCurrentCategoryIndex(newIndex);
-                  if (newIndex === 0) {
+              {/* Quick clear button when category is selected */}
+              {selectedCategory && (
+                <button
+                  onClick={() => {
                     setSelectedCategory(null);
-                  } else {
-                    setSelectedCategory(categories[newIndex - 1].id);
-                  }
-                  setCurrentPage(1);
-                }}
-                className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-white hover:bg-primary hover:text-white border-2 border-primary/20 hover:border-primary shadow-md hover:shadow-lg transition-all duration-200 group"
-                aria-label="Next category"
-              >
-                <svg className="w-6 h-6 text-primary group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
+                    setCurrentPage(1);
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  Clear filter
+                </button>
+              )}
             </div>
           </div>
         )}
