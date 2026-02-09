@@ -54,8 +54,7 @@ export default function RecipePage() {
   const [categories, setCategories] = useState<CategoryWithCount[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [loadingCategories, setLoadingCategories] = useState(true);
-  const [showAllCategories, setShowAllCategories] = useState(false);
-  const categoryScrollRef = useRef<HTMLDivElement>(null);
+  const [currentCategoryIndex, setCurrentCategoryIndex] = useState<number>(0);
   
   const router = useRouter();
   const prevSearchQueryRef = useRef<string>('');
@@ -395,91 +394,73 @@ export default function RecipePage() {
           )}
         </div>
 
-        {/* Category Filter - Modern Horizontal Scroll */}
+        {/* Category Filter - Single Item with Navigation */}
         {!searchQuery && categories.length > 0 && (
-          <div className="mb-12">
-            <div className="mb-5">
-              <h2 className="text-2xl font-bold text-textPrimary mb-1">Explore Categories</h2>
-              <p className="text-textSecondary">Browse {categories.length} categories with {pagination?.total || 0} delicious recipes</p>
-            </div>
-            
-            {/* Scrollable Categories */}
-            <div className="relative">
-              {/* Scroll Buttons */}
+          <div className="mb-10">
+            <div className="flex items-center justify-between bg-gradient-to-r from-primary/5 to-secondary/5 rounded-2xl p-6 border border-primary/20">
+              {/* Previous Button */}
               <button
-                onClick={() => categoryScrollRef.current?.scrollBy({ left: -400, behavior: 'smooth' })}
-                className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-10 h-10 items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 hover:bg-gray-50 hover:shadow-xl transition-all duration-200"
-                aria-label="Scroll left"
+                onClick={() => {
+                  const newIndex = currentCategoryIndex === 0 ? categories.length : currentCategoryIndex - 1;
+                  setCurrentCategoryIndex(newIndex);
+                  if (newIndex === 0) {
+                    setSelectedCategory(null);
+                  } else {
+                    setSelectedCategory(categories[newIndex - 1].id);
+                  }
+                  setCurrentPage(1);
+                }}
+                className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-white hover:bg-primary hover:text-white border-2 border-primary/20 hover:border-primary shadow-md hover:shadow-lg transition-all duration-200 group"
+                aria-label="Previous category"
               >
-                <svg className="w-5 h-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-6 h-6 text-primary group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
+
+              {/* Current Category Display */}
+              <div className="flex-1 text-center px-6">
+                {currentCategoryIndex === 0 ? (
+                  <div>
+                    <h2 className="text-2xl font-bold text-primary mb-1">All Recipes</h2>
+                    <p className="text-textSecondary font-medium">
+                      {pagination?.total || 0} recipes across all categories
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <h2 className="text-2xl font-bold text-primary mb-1">
+                      {categories[currentCategoryIndex - 1]?.name}
+                    </h2>
+                    <p className="text-textSecondary font-medium">
+                      {categories[currentCategoryIndex - 1]?.recipeCount} delicious recipes
+                    </p>
+                  </div>
+                )}
+                <p className="text-xs text-textSecondary mt-2">
+                  Category {currentCategoryIndex + 1} of {categories.length + 1}
+                </p>
+              </div>
+
+              {/* Next Button */}
               <button
-                onClick={() => categoryScrollRef.current?.scrollBy({ left: 400, behavior: 'smooth' })}
-                className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-10 h-10 items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 hover:bg-gray-50 hover:shadow-xl transition-all duration-200"
-                aria-label="Scroll right"
+                onClick={() => {
+                  const newIndex = currentCategoryIndex === categories.length ? 0 : currentCategoryIndex + 1;
+                  setCurrentCategoryIndex(newIndex);
+                  if (newIndex === 0) {
+                    setSelectedCategory(null);
+                  } else {
+                    setSelectedCategory(categories[newIndex - 1].id);
+                  }
+                  setCurrentPage(1);
+                }}
+                className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-white hover:bg-primary hover:text-white border-2 border-primary/20 hover:border-primary shadow-md hover:shadow-lg transition-all duration-200 group"
+                aria-label="Next category"
               >
-                <svg className="w-5 h-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-6 h-6 text-primary group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                 </svg>
               </button>
-
-              <div
-                ref={categoryScrollRef}
-                className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory scroll-smooth -mx-1 px-1"
-              >
-                {/* All Recipes Button */}
-                <button
-                  onClick={() => {
-                    setSelectedCategory(null);
-                    setCurrentPage(1);
-                  }}
-                  className={`flex-shrink-0 snap-start px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${
-                    selectedCategory === null
-                      ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-105'
-                      : 'bg-white text-gray-700 border border-gray-200 hover:border-primary hover:text-primary hover:shadow-md'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span>All Recipes</span>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                      selectedCategory === null 
-                        ? 'bg-white/20 text-white' 
-                        : 'bg-gray-100 text-gray-600'
-                    }`}>
-                      {pagination?.total || 0}
-                    </span>
-                  </div>
-                </button>
-
-                {/* Category Buttons */}
-                {categories.map((category) => (
-                  <button
-                    key={category.id}
-                    onClick={() => {
-                      setSelectedCategory(category.id);
-                      setCurrentPage(1);
-                    }}
-                    className={`flex-shrink-0 snap-start px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${
-                      selectedCategory === category.id
-                        ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-105'
-                        : 'bg-white text-gray-700 border border-gray-200 hover:border-primary hover:text-primary hover:shadow-md'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span>{category.name}</span>
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                        selectedCategory === category.id 
-                          ? 'bg-white/20 text-white' 
-                          : 'bg-gray-100 text-gray-600'
-                      }`}>
-                        {category.recipeCount}
-                      </span>
-                    </div>
-                  </button>
-                ))}
-              </div>
             </div>
           </div>
         )}

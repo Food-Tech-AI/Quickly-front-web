@@ -115,6 +115,10 @@ export default function RecipeDetailPage() {
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [productError, setProductError] = useState<string | null>(null);
   const [expandedIngredient, setExpandedIngredient] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'ingredients' | 'products'>('ingredients');
+  const [selectedProducts, setSelectedProducts] = useState<Set<number>>(new Set());
+  // Track which alternative product to show per ingredient (key: ingredient_id/name, value: index in ranked_products)
+  const [productDisplayIndex, setProductDisplayIndex] = useState<Record<string, number>>({});
 
   const recipeId = params?.id as string;
 
@@ -653,174 +657,261 @@ export default function RecipeDetailPage() {
 
         {/* Ingredients & Instructions */}
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Ingredients */}
+          {/* Ingredients & Products */}
           <div className="lg:col-span-1">
             <div className="bg-surface rounded-2xl shadow-sm border border-border p-6 sticky top-24 hover:shadow-md transition-shadow">
-              <h2 
-                className={`text-2xl font-bold text-text mb-6 flex items-center gap-2 ${language === 'ar' ? 'flex-row-reverse' : ''}`}
-                dir={language === 'ar' ? 'rtl' : 'ltr'}
-              >
-                <span className="text-2xl">🥘</span>
-                <span>{language === 'ar' ? 'المكونات' : language === 'fr' ? 'Ingrédients' : 'Ingredients'}</span>
-              </h2>
-              {(() => {
-                const ingredients = recipe.recipeIngredients || recipe.ingredients || [];
-                
-                // Helper to find product matches for an ingredient
-                const getProductsForIngredient = (ingredientId: number) => {
-                  if (!productMatches) return null;
-                  return productMatches.matches.find(m => m.ingredient_id === ingredientId);
-                };
+              {/* Tab Buttons */}
+              <div className="flex items-center gap-1 mb-6 bg-surfaceSecondary rounded-xl p-1 border border-border">
+                <button
+                  onClick={() => setActiveTab('ingredients')}
+                  className={`flex-1 px-4 py-2.5 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2 ${
+                    activeTab === 'ingredients'
+                      ? 'bg-primary text-white shadow-sm'
+                      : 'text-textSecondary hover:text-text hover:bg-surface'
+                  }`}
+                >
+                  <span>🥘</span>
+                  <span>{language === 'ar' ? 'المكونات' : language === 'fr' ? 'Ingrédients' : 'Ingredients'}</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('products')}
+                  className={`flex-1 px-4 py-2.5 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2 ${
+                    activeTab === 'products'
+                      ? 'bg-primary text-white shadow-sm'
+                      : 'text-textSecondary hover:text-text hover:bg-surface'
+                  }`}
+                >
+                  <span>🛒</span>
+                  <span>{language === 'ar' ? 'المنتجات' : language === 'fr' ? 'Produits' : 'Products'}</span>
+                  {productMatches && (
+                    <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                      activeTab === 'products' ? 'bg-white/20' : 'bg-primary/10 text-primary'
+                    }`}>
+                      {productMatches.matches.filter(m => m.ranked_products.length > 0).length}
+                    </span>
+                  )}
+                </button>
+              </div>
 
-                return ingredients.length > 0 ? (
-                  <ul className={`space-y-4 ${language === 'ar' ? 'text-right' : ''}`} dir={language === 'ar' ? 'rtl' : 'ltr'}>
-                    {ingredients.map((ing) => {
-                      const matches = getProductsForIngredient(ing.ingredientId);
-                      const isExpanded = expandedIngredient === String(ing.ingredientId);
-                      
-                      return (
-                        <li key={ing.id} className="group">
-                          <div 
-                            className={`flex items-start gap-3 text-textSecondary cursor-pointer hover:bg-primary/5 rounded-lg p-2 -m-2 transition-colors ${matches && matches.ranked_products.length > 0 ? '' : ''}`}
-                            onClick={() => {
-                              if (matches && matches.ranked_products.length > 0) {
-                                setExpandedIngredient(isExpanded ? null : String(ing.ingredientId));
-                              }
-                            }}
-                          >
+              {/* ===== INGREDIENTS TAB ===== */}
+              {activeTab === 'ingredients' && (
+                <div>
+                  {(() => {
+                    const ingredients = recipe.recipeIngredients || recipe.ingredients || [];
+
+                    return ingredients.length > 0 ? (
+                      <ul className={`space-y-3 ${language === 'ar' ? 'text-right' : ''}`} dir={language === 'ar' ? 'rtl' : 'ltr'}>
+                        {ingredients.map((ing) => (
+                          <li key={ing.id} className="group flex items-start gap-3 text-textSecondary hover:bg-primary/5 rounded-lg p-2 -m-2 transition-colors">
                             <span className="text-primary mt-1.5 font-bold group-hover:scale-110 transition-transform">•</span>
                             <span className="flex-1">
                               <span className="font-semibold text-text">
                                 {getScaledQuantity(ing.quantity, ing.unit)} {ing.unit}
                               </span>{' '}
                               <span className="text-textSecondary">{getIngredientName(ing.ingredient)}</span>
-                              {matches && matches.ranked_products.length > 0 && (
-                                <span className="ml-2 text-xs text-primary inline-flex items-center gap-1">
-                                  🛒 {matches.ranked_products.length} {language === 'fr' ? 'produits' : language === 'ar' ? 'منتجات' : 'products'}
-                                  <span className="text-xs">{isExpanded ? '▼' : '▶'}</span>
-                                </span>
-                              )}
                             </span>
-                          </div>
-                          
-                          {/* Product cards when expanded */}
-                          {isExpanded && matches && (
-                            <div className="mt-3 ml-6 space-y-2">
-                              {matches.ranked_products.map((product, idx) => (
-                                <div 
-                                  key={product.id} 
-                                  className="flex items-center gap-3 p-3 bg-gradient-to-r from-gray-50 to-white rounded-lg border border-gray-200 hover:border-primary/50 hover:shadow-sm transition-all"
-                                >
-                                  {/* Product Image */}
-                                  <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-gray-100">
-                                    {product.image ? (
-                                      <img 
-                                        src={product.image} 
-                                        alt={product.label}
-                                        className="w-full h-full object-cover"
-                                        onError={(e) => {
-                                          (e.target as HTMLImageElement).src = '/placeholder-product.png';
-                                        }}
-                                      />
-                                    ) : (
-                                      <div className="w-full h-full flex items-center justify-center text-2xl">📦</div>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className={`text-textSecondary ${language === 'ar' ? 'text-right' : ''}`} dir={language === 'ar' ? 'rtl' : 'ltr'}>
+                        {language === 'ar' ? 'لا توجد مكونات مدرجة' : language === 'fr' ? 'Aucun ingrédient listé' : 'No ingredients listed'}
+                      </p>
+                    );
+                  })()}
+                </div>
+              )}
+
+              {/* ===== PRODUCTS TAB ===== */}
+              {activeTab === 'products' && (
+                <div>
+                  {/* Product Loading State */}
+                  {loadingProducts && (
+                    <div className="p-4 bg-primary/5 rounded-lg flex items-center gap-3">
+                      <div className="animate-spin w-5 h-5 border-2 border-primary border-t-transparent rounded-full"></div>
+                      <span className="text-sm text-textSecondary">
+                        {language === 'ar'
+                          ? 'جاري تحميل المنتجات المطابقة...'
+                          : language === 'fr'
+                          ? 'Chargement des produits correspondants...'
+                          : 'Loading matching products...'}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Product Error State */}
+                  {productError && (
+                    <div className="p-4 bg-red-50 text-red-600 rounded-lg text-sm">
+                      {productError}
+                    </div>
+                  )}
+
+                  {/* Product List - one product per ingredient with swap */}
+                  {productMatches && !loadingProducts && (() => {
+                    const ingredients = recipe.recipeIngredients || recipe.ingredients || [];
+                    const matchesWithProducts = productMatches.matches.filter(m => m.ranked_products.length > 0);
+
+                    return matchesWithProducts.length > 0 ? (
+                      <div className="space-y-3">
+                        {matchesWithProducts.map((match) => {
+                          const ing = ingredients.find(i => i.ingredientId === match.ingredient_id);
+                          const matchKey = String(match.ingredient_id || match.ingredient_name);
+                          const currentIdx = productDisplayIndex[matchKey] || 0;
+                          const product = match.ranked_products[currentIdx];
+                          const hasAlternatives = match.ranked_products.length > 1;
+                          const isSelected = product ? selectedProducts.has(product.id) : false;
+
+                          if (!product) return null;
+
+                          return (
+                            <div
+                              key={matchKey}
+                              className={`rounded-xl border transition-all ${
+                                isSelected
+                                  ? 'bg-primary/5 border-primary/30 shadow-sm'
+                                  : 'bg-white border-gray-200 hover:border-primary/20'
+                              }`}
+                            >
+                              {/* Ingredient name header */}
+                              <div className="px-3.5 pt-3 pb-1.5 flex items-center justify-between">
+                                <span className="text-xs font-semibold text-textSecondary uppercase tracking-wide truncate">
+                                  {ing ? getIngredientName(ing.ingredient) : match.ingredient_name}
+                                </span>
+                                {hasAlternatives && (
+                                  <span className="text-[10px] text-textSecondary">
+                                    {currentIdx + 1}/{match.ranked_products.length}
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Product row */}
+                              <div className="flex items-center gap-3 px-3.5 pb-3">
+                                {/* Product Image */}
+                                <div className="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden bg-gray-100">
+                                  {product.image ? (
+                                    <img
+                                      src={product.image}
+                                      alt={product.label}
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => {
+                                        (e.target as HTMLImageElement).src = '/placeholder-product.png';
+                                      }}
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-lg">📦</div>
+                                  )}
+                                </div>
+
+                                {/* Product Info */}
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-sm text-text truncate" title={product.label}>
+                                    {product.label}
+                                  </p>
+                                  <div className="flex items-center gap-2 mt-0.5">
+                                    {product.price != null && (
+                                      <span className="text-sm font-bold text-primary">
+                                        {product.price.toFixed(2)} {product.currency || 'MAD'}
+                                      </span>
                                     )}
-                                  </div>
-                                  
-                                  {/* Product Info */}
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-start justify-between gap-2">
-                                      <div className="min-w-0">
-                                        <p className="font-medium text-sm text-text truncate" title={product.label}>
-                                          {product.label}
-                                        </p>
-                                        {product.brand && (
-                                          <p className="text-xs text-textSecondary">{product.brand}</p>
-                                        )}
-                                      </div>
-                                      <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">
-                                        {idx + 1}
+                                    {product.product_weight && product.product_unit && (
+                                      <span className="text-[11px] text-textSecondary">
+                                        {product.product_weight}{product.product_unit}
                                       </span>
-                                    </div>
-                                    
-                                    <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                      {product.price && (
-                                        <span className="text-sm font-bold text-primary">
-                                          {product.price.toFixed(2)} {product.currency || 'MAD'}
-                                        </span>
-                                      )}
-                                      {product.product_weight && product.product_unit && (
-                                        <span className="text-xs text-textSecondary bg-gray-100 px-2 py-0.5 rounded">
-                                          {product.product_weight} {product.product_unit}
-                                        </span>
-                                      )}
-                                      <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded">
-                                        {language === 'fr' ? 'Qté:' : language === 'ar' ? 'الكمية:' : 'Qty:'} {product.quantity_to_buy}
-                                      </span>
-                                    </div>
-                                    
-                                    {product.match_reason && (
-                                      <p className="text-xs text-textSecondary mt-1 line-clamp-2" title={product.match_reason}>
-                                        💡 {product.match_reason}
-                                      </p>
                                     )}
                                   </div>
                                 </div>
-                              ))}
+
+                                {/* Swap / Replace button */}
+                                {hasAlternatives && (
+                                  <button
+                                    onClick={() => {
+                                      setProductDisplayIndex(prev => {
+                                        const next = (currentIdx + 1) % match.ranked_products.length;
+                                        return { ...prev, [matchKey]: next };
+                                      });
+                                    }}
+                                    className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-full border border-gray-200 hover:border-primary hover:bg-primary/5 transition-all group"
+                                    title={language === 'fr' ? 'Remplacer' : language === 'ar' ? 'استبدال' : 'Replace'}
+                                  >
+                                    <svg className="w-4 h-4 text-gray-400 group-hover:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+                                    </svg>
+                                  </button>
+                                )}
+
+                                {/* Select toggle */}
+                                <button
+                                  onClick={() => {
+                                    setSelectedProducts(prev => {
+                                      const next = new Set(prev);
+                                      if (next.has(product.id)) {
+                                        next.delete(product.id);
+                                      } else {
+                                        next.add(product.id);
+                                      }
+                                      return next;
+                                    });
+                                  }}
+                                  className={`flex-shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all ${
+                                    isSelected
+                                      ? 'bg-primary border-primary'
+                                      : 'border-gray-300 hover:border-primary/50'
+                                  }`}
+                                  aria-label={isSelected ? 'Deselect' : 'Select'}
+                                >
+                                  {isSelected && (
+                                    <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                  )}
+                                </button>
+                              </div>
                             </div>
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                ) : (
-                  <p className={`text-textSecondary ${language === 'ar' ? 'text-right' : ''}`} dir={language === 'ar' ? 'rtl' : 'ltr'}>
-                    {language === 'ar' ? 'لا توجد مكونات مدرجة' : language === 'fr' ? 'Aucun ingrédient listé' : 'No ingredients listed'}
-                  </p>
-                );
-              })()}
-              
-              {/* Product Loading State */}
-              {loadingProducts && (
-                <div className="mt-4 p-4 bg-primary/5 rounded-lg flex items-center gap-3">
-                  <div className="animate-spin w-5 h-5 border-2 border-primary border-t-transparent rounded-full"></div>
-                  <span className="text-sm text-textSecondary">
-                    {language === 'ar' 
-                      ? 'جاري تحميل المنتجات المطابقة...' 
-                      : language === 'fr' 
-                      ? 'Chargement des produits correspondants...' 
-                      : 'Loading matching products...'}
-                  </span>
-                </div>
-              )}
-              
-              {/* Product Error State */}
-              {productError && (
-                <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-lg text-sm">
-                  {productError}
-                </div>
-              )}
-              
-              {/* Products Found Summary */}
-              {productMatches && !loadingProducts && (
-                <div className="mt-4 pt-4 border-t border-border">
-                  <p className="text-xs text-textSecondary flex items-center gap-2">
-                    <span>🛒</span>
-                    <span>
-                      {language === 'ar' 
-                        ? `${productMatches.matches.filter(m => m.ranked_products.length > 0).length} مكونات لها منتجات مطابقة` 
-                        : language === 'fr' 
-                        ? `${productMatches.matches.filter(m => m.ranked_products.length > 0).length} ingrédients avec produits` 
-                        : `${productMatches.matches.filter(m => m.ranked_products.length > 0).length} ingredients with matching products`}
-                    </span>
-                  </p>
-                  <p className="text-xs text-textSecondary mt-1">
-                    {language === 'ar' 
-                      ? 'اضغط على المكون لرؤية المنتجات' 
-                      : language === 'fr' 
-                      ? 'Cliquez sur un ingrédient pour voir les produits' 
-                      : 'Click an ingredient to see products'}
-                  </p>
+                          );
+                        })}
+
+                        {/* Selected count summary */}
+                        {selectedProducts.size > 0 && (
+                          <div className="mt-3 pt-3 border-t border-border">
+                            <p className="text-sm font-medium text-primary flex items-center gap-2">
+                              <span>✅</span>
+                              <span>
+                                {language === 'ar'
+                                  ? `${selectedProducts.size} منتجات محددة`
+                                  : language === 'fr'
+                                  ? `${selectedProducts.size} produit(s) sélectionné(s)`
+                                  : `${selectedProducts.size} product(s) selected`}
+                              </span>
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <span className="text-4xl mb-3 block">📦</span>
+                        <p className="text-textSecondary text-sm">
+                          {language === 'ar'
+                            ? 'لم يتم العثور على منتجات مطابقة'
+                            : language === 'fr'
+                            ? 'Aucun produit correspondant trouvé'
+                            : 'No matching products found'}
+                        </p>
+                      </div>
+                    );
+                  })()}
+
+                  {!productMatches && !loadingProducts && !productError && (
+                    <div className="text-center py-8">
+                      <span className="text-4xl mb-3 block">🔍</span>
+                      <p className="text-textSecondary text-sm">
+                        {language === 'ar'
+                          ? 'جاري البحث عن منتجات...'
+                          : language === 'fr'
+                          ? 'Recherche de produits...'
+                          : 'Searching for products...'}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
