@@ -235,7 +235,9 @@ export default function RecipePage() {
             const recipeList = results.map((r: any) => ({
               id: r.id,
               title: r.title,
+              title_fr: r.title_fr,
               description: r.description,
+              description_fr: r.description_fr,
               image: r.image,
               prepTime: r.prepTime,
               cookTime: r.cookTime,
