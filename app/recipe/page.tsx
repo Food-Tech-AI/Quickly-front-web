@@ -139,12 +139,12 @@ export default function RecipePage() {
         
         // Handle paginated response
         if (data.data && data.meta) {
-          setRecipes(data.data);
+          setRecipes(data.data.filter((r: Recipe) => r.image));
           setPagination(data.meta);
         } else {
           // Fallback for non-paginated response
           const recipeList = Array.isArray(data) ? data : data.recipes || data.data || [];
-          setRecipes(recipeList);
+          setRecipes(recipeList.filter((r: Recipe) => r.image));
         }
       } catch (err: any) {
         console.error('Error fetching recipes:', err);
@@ -248,8 +248,9 @@ export default function RecipePage() {
               category: r.category,
             }));
             
-            console.log('[Hybrid Search] Mapped recipes:', recipeList.length);
-            setRecipes(recipeList);
+            const recipesWithImages = recipeList.filter((r: Recipe) => r.image);
+            console.log('[Hybrid Search] Mapped recipes:', recipesWithImages.length);
+            setRecipes(recipesWithImages);
             // For search results, total is the number of results returned
             // (hybrid search doesn't provide a total count, just the results)
             const totalCount = (result as any).count || recipeList.length;
