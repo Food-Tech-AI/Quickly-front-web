@@ -20,7 +20,9 @@ interface Category {
 interface Recipe {
   id: number;
   title: string;
+  title_fr?: string;
   description?: string;
+  description_fr?: string;
   image?: string;
   prepTime?: number;
   cookTime?: number;
@@ -47,7 +49,7 @@ export default function RecipePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);
   const [searchDuration, setSearchDuration] = useState<number | null>(null);
-  const [useAIReranking, setUseAIReranking] = useState(true);
+  const [useAIReranking, setUseAIReranking] = useState(false);
   const [wasRerankedWithLLM, setWasRerankedWithLLM] = useState(false);
   
   // Category filter state
@@ -306,7 +308,7 @@ export default function RecipePage() {
     return (
       <main className="min-h-screen py-20 container mx-auto px-6">
         <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-          <p className="text-error font-medium mb-2">Error Loading Recipes</p>
+          <p className="text-error font-medium mb-2">Erreur de chargement des recettes</p>
           <p className="text-error/80 text-sm">{error}</p>
         </div>
       </main>
@@ -319,9 +321,9 @@ export default function RecipePage() {
         {/* Header */}
         <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-4xl font-bold text-text mb-3">My Recipes</h1>
+            <h1 className="text-4xl font-bold text-text mb-3">Mes Recettes</h1>
             <p className="text-textSecondary text-lg">
-              Browse and manage your personal recipe collection
+              Parcourez et gérez votre collection de recettes
             </p>
           </div>
           <Link 
@@ -331,7 +333,7 @@ export default function RecipePage() {
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            Create Recipe
+            Créer une recette
           </Link>
         </div>
 
@@ -346,7 +348,7 @@ export default function RecipePage() {
               </div>
               <input
                 type="text"
-                placeholder="Search recipes semantically (e.g., 'healthy breakfast', 'quick dinner', 'chicken')..."
+                placeholder="Rechercher des recettes (ex: 'petit-déjeuner sain', 'dîner rapide', 'poulet')..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-12 pr-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-surface text-text placeholder-textLight"
@@ -370,7 +372,7 @@ export default function RecipePage() {
             </div>
             
             {/* AI Reranking Toggle */}
-            <div className="flex items-center gap-3 px-4 py-2 bg-surface border border-border rounded-xl">
+            {/* <div className="flex items-center gap-3 px-4 py-2 bg-surface border border-border rounded-xl">
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
                   type="checkbox"
@@ -386,24 +388,24 @@ export default function RecipePage() {
                   {useAIReranking ? 'Enhanced results with GPT' : 'Faster, basic ranking'}
                 </span>
               </div>
-            </div>
+            </div> */}
           </div>
           
           {searchQuery && !searching && (
             <div className="flex items-center gap-4 text-sm text-textSecondary mt-2">
               <p>
-                Found {recipes.length} recipe{recipes.length !== 1 ? 's' : ''} matching "{searchQuery}"
+                {recipes.length} recette{recipes.length !== 1 ? 's' : ''} trouvée{recipes.length !== 1 ? 's' : ''} pour "{searchQuery}"
               </p>
               {searchDuration !== null && (
                 <p className="text-xs">
-                  (Search took {searchDuration}ms{wasRerankedWithLLM ? ' with AI reranking' : ''})
+                  (Recherche en {searchDuration}ms{wasRerankedWithLLM ? ' avec reclassement IA' : ''})
                 </p>
               )}
             </div>
           )}
           {searching && (
             <p className="text-sm text-textSecondary mt-2">
-              Searching{useAIReranking ? ' with AI reranking' : ''}...
+              Recherche en cours{useAIReranking ? ' avec reclassement IA' : ''}...
             </p>
           )}
         </div>
@@ -414,7 +416,7 @@ export default function RecipePage() {
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
               {/* Label */}
               <span className="text-sm font-medium text-textSecondary whitespace-nowrap">
-                Filter by category:
+                Filtrer par catégorie :
               </span>
               
               {/* Dropdown */}
@@ -428,13 +430,13 @@ export default function RecipePage() {
                     <div className="min-w-0">
                       <p className="font-semibold text-text truncate">
                         {selectedCategory
-                          ? categories.find(c => c.id === selectedCategory)?.name || 'Category'
-                          : 'All Recipes'}
+                          ? categories.find(c => c.id === selectedCategory)?.name || 'Catégorie'
+                          : 'Toutes les recettes'}
                       </p>
                       <p className="text-xs text-textSecondary">
                         {selectedCategory
-                          ? `${categories.find(c => c.id === selectedCategory)?.recipeCount || 0} recipes`
-                          : `${pagination?.total || 0} recipes total`}
+                          ? `${categories.find(c => c.id === selectedCategory)?.recipeCount || 0} recettes`
+                          : `${pagination?.total || 0} recettes au total`}
                       </p>
                     </div>
                   </div>
@@ -464,7 +466,7 @@ export default function RecipePage() {
                         </svg>
                         <input
                           type="text"
-                          placeholder="Search categories..."
+                          placeholder="Rechercher une catégorie..."
                           value={categorySearch}
                           onChange={(e) => setCategorySearch(e.target.value)}
                           className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none"
@@ -491,8 +493,8 @@ export default function RecipePage() {
                       >
                         <span className="text-lg">🍽️</span>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium">All Recipes</p>
-                          <p className="text-xs text-textSecondary">{pagination?.total || 0} recipes</p>
+                          <p className="font-medium">Toutes les recettes</p>
+                          <p className="text-xs text-textSecondary">{pagination?.total || 0} recettes</p>
                         </div>
                         {selectedCategory === null && (
                           <svg className="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
@@ -527,7 +529,7 @@ export default function RecipePage() {
                             <span className="text-lg">🏷️</span>
                             <div className="flex-1 min-w-0">
                               <p className="font-medium truncate">{category.name}</p>
-                              <p className="text-xs text-textSecondary">{category.recipeCount} recipes</p>
+                              <p className="text-xs text-textSecondary">{category.recipeCount} recettes</p>
                             </div>
                             {selectedCategory === category.id && (
                               <svg className="w-5 h-5 text-primary flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -543,7 +545,7 @@ export default function RecipePage() {
                           cat.name.toLowerCase().includes(categorySearch.toLowerCase())
                         ).length === 0 && (
                           <div className="px-4 py-8 text-center text-textSecondary text-sm">
-                            No categories found for "{categorySearch}"
+                            Aucune catégorie trouvée pour "{categorySearch}"
                           </div>
                         )}
                     </div>
@@ -563,7 +565,7 @@ export default function RecipePage() {
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
-                  Clear filter
+                  Effacer le filtre
                 </button>
               )}
             </div>
@@ -598,17 +600,17 @@ export default function RecipePage() {
                 <div className="p-6">
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <h3 className="font-bold text-xl text-text group-hover:text-primary transition-colors line-clamp-2 flex-1">
-                      {recipe.title}
+                      {recipe.title_fr || recipe.title}
                     </h3>
-                    {recipe.similarity !== undefined && (
+                    {/* {recipe.similarity !== undefined && (
                       <div className="flex-shrink-0 bg-primary/10 text-primary px-2 py-1 rounded-lg text-xs font-semibold">
                         {(recipe.similarity * 100).toFixed(0)}% match
                       </div>
-                    )}
+                    )} */}
                   </div>
-                  {recipe.description && (
+                  {(recipe.description_fr || recipe.description) && (
                     <p className="text-textSecondary text-sm mb-4 line-clamp-2">
-                      {recipe.description}
+                      {recipe.description_fr || recipe.description}
                     </p>
                   )}
                   
@@ -645,7 +647,7 @@ export default function RecipePage() {
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
-                        <span>{recipe.servings} servings</span>
+                        <span>{recipe.servings} portions</span>
                       </div>
                     )}
                   </div>
@@ -658,9 +660,9 @@ export default function RecipePage() {
             {searchQuery ? (
               <>
                 <div className="text-6xl mb-4">🔍</div>
-                <h3 className="text-xl font-semibold text-text mb-2">No Recipes Found</h3>
+                <h3 className="text-xl font-semibold text-text mb-2">Aucune recette trouvée</h3>
                 <p className="text-textSecondary mb-6">
-                  No recipes match your search "{searchQuery}". Try a different search term.
+                  Aucune recette ne correspond à votre recherche "{searchQuery}". Essayez un autre terme.
                 </p>
                 <button
                   onClick={() => setSearchQuery('')}
@@ -669,15 +671,15 @@ export default function RecipePage() {
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
-                  Clear Search
+                  Effacer la recherche
                 </button>
               </>
             ) : (
               <>
                 <div className="text-6xl mb-4">📝</div>
-                <h3 className="text-xl font-semibold text-text mb-2">No Recipes Yet</h3>
+                <h3 className="text-xl font-semibold text-text mb-2">Pas encore de recettes</h3>
                 <p className="text-textSecondary mb-6">
-                  Start building your recipe collection by adding your first recipe!
+                  Commencez à construire votre collection en ajoutant votre première recette !
                 </p>
                 <Link
                   href="/create-recipe"
@@ -686,7 +688,7 @@ export default function RecipePage() {
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
-                  Add Your First Recipe
+                  Ajouter votre première recette
                 </Link>
               </>
             )}
@@ -708,7 +710,7 @@ export default function RecipePage() {
             
             {/* Pagination Info */}
             <div className="mt-4 text-center text-sm text-textSecondary">
-              Showing {((currentPage - 1) * pagination.limit) + 1} to {Math.min(currentPage * pagination.limit, pagination.total)} of {pagination.total} recipes
+              Affichage de {((currentPage - 1) * pagination.limit) + 1} à {Math.min(currentPage * pagination.limit, pagination.total)} sur {pagination.total} recettes
             </div>
           </div>
         )}
