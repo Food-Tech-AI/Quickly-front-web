@@ -7,10 +7,11 @@ import RecipeShowcase from './components/RecipeShowcase';
 import Testimonials from './components/Testimonials';
 import CTA from './components/CTA';
 import Footer from './components/Footer';
+import BackToTop from './components/BackToTop';
 
 export default function Home() {
   return (
-    <main className="min-h-screen">
+    <main id="main-content" className="min-h-screen">
       <Navbar />
       <Hero />
       <div id="features">
@@ -30,6 +31,7 @@ export default function Home() {
       </div>
       <CTA />
       <Footer />
+      <BackToTop />
     </main>
   );
 }

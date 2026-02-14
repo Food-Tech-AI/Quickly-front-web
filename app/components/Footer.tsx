@@ -1,74 +1,121 @@
 'use client';
 
+import { motion } from 'framer-motion';
+
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
+  const linkGroups = [
+    {
+      title: 'Produit',
+      links: [
+        { label: 'Fonctionnalités', href: '#features' },
+        { label: 'Recettes', href: '/recipe' },
+        { label: 'Comment ça marche', href: '#how-it-works' },
+        { label: 'Panier de Courses', href: '#grocery-shopping' },
+      ],
+    },
+    {
+      title: 'Ressources',
+      links: [
+        { label: 'Créer une recette', href: '/recipe/create' },
+        { label: 'Explorer', href: '/recipe' },
+        { label: 'Connexion', href: '/login' },
+      ],
+    },
+    {
+      title: 'Légal',
+      links: [
+        { label: 'Confidentialité', href: '/privacy' },
+      ],
+    },
+  ];
+
+  const socials = [
+    { icon: 'instagram', label: 'Instagram', href: '#' },
+    { icon: 'twitter', label: 'Twitter', href: '#' },
+    { icon: 'facebook', label: 'Facebook', href: '#' },
+    { icon: 'youtube', label: 'YouTube', href: '#' },
+  ];
+
+  const socialIcons: Record<string, React.ReactNode> = {
+    instagram: (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+    ),
+    twitter: (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+    ),
+    facebook: (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+    ),
+    youtube: (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+    ),
+  };
+
   return (
-    <footer className="bg-[#1a1a1a] text-white py-12 border-t border-white/10">
+    <footer className="bg-[#0F1A2E] text-white pt-20 pb-10">
       <div className="container mx-auto px-6">
-        <div className="grid md:grid-cols-4 gap-8 mb-8">
+        <motion.div
+          className="grid md:grid-cols-5 gap-12 mb-16"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
           {/* Brand */}
-          <div className="md:col-span-1">
-            <h3 className="text-2xl font-bold mb-4 text-primary">Quickly</h3>
-            <p className="text-white/70 text-sm leading-relaxed">
-              Transforming how you discover, save, and cook recipes from social media.
+          <div className="md:col-span-2">
+            <div className="flex items-center gap-2.5 mb-5">
+              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+                <span className="text-white font-black text-base">Q</span>
+              </div>
+              <h3 className="text-xl font-black">E-Quickly</h3>
+            </div>
+            <p className="text-white/45 text-sm leading-relaxed max-w-xs mb-6">
+              Transformez votre façon de découvrir, sauvegarder et cuisiner des recettes provenant des réseaux sociaux.
             </p>
+            <div className="flex gap-3">
+              {socials.map((social, i) => (
+                <a
+                  key={i}
+                  href={social.href}
+                  aria-label={social.label}
+                  className="w-10 h-10 bg-white/[0.06] hover:bg-primary/20 rounded-xl flex items-center justify-center text-white/50 hover:text-primary transition-all duration-200 hover:scale-110"
+                >
+                  {socialIcons[social.icon]}
+                </a>
+              ))}
+            </div>
           </div>
 
-          {/* Product */}
-          <div>
-            <h4 className="font-bold mb-4 text-accent">Product</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="#" className="text-white/70 hover:text-primary transition-colors">Features</a></li>
-              <li><a href="#" className="text-white/70 hover:text-primary transition-colors">Recipes</a></li>
-              <li><a href="#" className="text-white/70 hover:text-primary transition-colors">Meal Planning</a></li>
-              <li><a href="#" className="text-white/70 hover:text-primary transition-colors">Grocery Cart</a></li>
-            </ul>
-          </div>
+          {/* Link groups */}
+          {linkGroups.map((group, i) => (
+            <div key={i}>
+              <h4 className="font-bold mb-5 text-white/80 text-xs uppercase tracking-[0.15em]">{group.title}</h4>
+              <ul className="space-y-3 text-sm">
+                {group.links.map((link, j) => (
+                  <li key={j}>
+                    <a
+                      href={link.href}
+                      className="text-white/40 hover:text-primary transition-colors duration-200 inline-block"
+                    >
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </motion.div>
 
-          {/* Company */}
-          <div>
-            <h4 className="font-bold mb-4 text-accent">Company</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="#" className="text-white/70 hover:text-primary transition-colors">About Us</a></li>
-              <li><a href="#" className="text-white/70 hover:text-primary transition-colors">Blog</a></li>
-              <li><a href="#" className="text-white/70 hover:text-primary transition-colors">Careers</a></li>
-              <li><a href="#" className="text-white/70 hover:text-primary transition-colors">Contact</a></li>
-            </ul>
-          </div>
-
-          {/* Legal */}
-          <div>
-            <h4 className="font-bold mb-4 text-accent">Legal</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="/privacy" className="text-white/70 hover:text-primary transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="text-white/70 hover:text-primary transition-colors">Terms of Service</a></li>
-              <li><a href="#" className="text-white/70 hover:text-primary transition-colors">Cookie Policy</a></li>
-              <li><a href="#" className="text-white/70 hover:text-primary transition-colors">GDPR</a></li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Social Links */}
-        <div className="border-t border-white/20 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-white/70 text-sm mb-4 md:mb-0">
-            © {currentYear} Quickly. All rights reserved.
+        {/* Divider & Bottom */}
+        <div className="border-t border-white/[0.06] pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-white/25 text-sm">
+            © {currentYear} E-Quickly. Tous droits réservés.
           </p>
-          
-          <div className="flex gap-6">
-            <a href="#" className="text-white/70 hover:text-primary transition-colors text-2xl">
-              📷
-            </a>
-            <a href="#" className="text-white/70 hover:text-primary transition-colors text-2xl">
-              🐦
-            </a>
-            <a href="#" className="text-white/70 hover:text-primary transition-colors text-2xl">
-              📘
-            </a>
-            <a href="#" className="text-white/70 hover:text-primary transition-colors text-2xl">
-              🎬
-            </a>
-          </div>
+          <p className="text-white/20 text-xs">
+            Fait avec 💚 pour les passionnés de cuisine
+          </p>
         </div>
       </div>
     </footer>

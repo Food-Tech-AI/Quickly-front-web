@@ -1,27 +1,23 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from '@vercel/analytics/react';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "E-Quickly",
-  description: "Transform video recipes into meals. Save recipes from cooking videos, plan your weekly meals, and add ingredients to your grocery cart to shop smarter.",
-  keywords: "recipes, cooking, food, videos, cooking videos, AI, meal planning, grocery shopping, shopping cart, ingredients",
+  title: "E-Quickly — Recettes & Courses Intelligentes",
+  description: "Découvrez des recettes délicieuses, planifiez vos repas et faites vos courses intelligemment avec E-Quickly.",
+  keywords: "recettes, cuisine, IA, courses, ingrédients, planification repas, panier intelligent",
   icons: {
     icon: [
       {
-        url: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>',
+        url: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍽️</text></svg>',
         type: 'image/svg+xml',
       }
     ],
@@ -34,12 +30,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="fr" className="scroll-smooth">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        style={{ backgroundColor: '#FDF9F2', color: '#2D2D2D' }}
+        className={`${inter.variable} font-sans antialiased`}
+        style={{ backgroundColor: '#FFFCF7', color: '#1A1A2E' }}
         suppressHydrationWarning
       >
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-6 focus:py-3 focus:bg-primary focus:text-white focus:rounded-xl focus:font-bold focus:text-sm focus:shadow-lg"
+        >
+          Aller au contenu principal
+        </a>
         {children}
         <Toaster position="top-right" richColors />
         <Analytics />

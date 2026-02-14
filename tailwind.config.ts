@@ -9,48 +9,47 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Primary Colors
-        primary: "#40E0D8",
-        secondary: "#5EBEC4",
-        accent: "#FCE283",
+        // Primary Colors — deeper teal for better contrast
+        primary: "#2ECFBD",
+        secondary: "#4BA8B0",
+        accent: "#FFCF56",
         
-        // Background Colors
-        background: "#FDF9F2",
-        backgroundSecondary: "#FEFBF4",
+        // Background Colors — warmer cream
+        background: "#FFFCF7",
+        backgroundSecondary: "#FFF9F0",
         
         // Surface Colors
         surface: "#FFFFFF",
-        surfaceSecondary: "#F8F9FA",
+        surfaceSecondary: "#F7F8FA",
         
-        // Text Colors
-        text: "#2D2D2D",
-        textSecondary: "#666",
-        textLight: "#888",
+        // Text Colors — darker for better readability
+        text: "#1A1A2E",
+        textSecondary: "#555770",
+        textLight: "#8E90A6",
         
         // Status Colors
-        success: "#4ECDC4",
-        warning: "#FFD84D",
-        error: "#F04245",
+        success: "#34D399",
+        warning: "#FBBF24",
+        error: "#EF4444",
         
         // Button Colors
-        buttonPrimary: "#40E0D8",
-        buttonSecondary: "#F4D03F",
+        buttonPrimary: "#2ECFBD",
+        buttonSecondary: "#FFCF56",
         
         // Border Colors
-        border: "#E0E0E0",
-        borderActive: "#00CCC3",
+        border: "#E8E8ED",
+        borderActive: "#2ECFBD",
         
         // Special Colors
-        heart: "#FFD84D",
+        heart: "#FF6B8A",
         fire: "#FF6B6B",
       },
       fontFamily: {
-        sans: ['var(--font-geist-sans)', 'system-ui', 'sans-serif'],
-        mono: ['var(--font-geist-mono)', 'monospace'],
+        sans: ['var(--font-inter)', 'system-ui', '-apple-system', 'sans-serif'],
       },
       borderRadius: {
-        'xl': '28px',
-        'lg': '22px',
+        'xl': '20px',
+        'lg': '16px',
         'md': '10px',
       },
     },
