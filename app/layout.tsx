@@ -36,6 +36,12 @@ export default function RootLayout({
         style={{ backgroundColor: '#FFFCF7', color: '#1A1A2E' }}
         suppressHydrationWarning
       >
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-6 focus:py-3 focus:bg-primary focus:text-white focus:rounded-xl focus:font-bold focus:text-sm focus:shadow-lg"
+        >
+          Aller au contenu principal
+        </a>
         {children}
         <Toaster position="top-right" richColors />
         <Analytics />

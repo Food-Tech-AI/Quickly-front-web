@@ -2,6 +2,7 @@
 
 import { featuredRecipes } from '../data/fakeData';
 import Image from 'next/image';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 
 export default function RecipeShowcase() {
@@ -38,8 +39,11 @@ export default function RecipeShowcase() {
               viewport={{ once: true, margin: '-50px' }}
               transition={{ duration: 0.5, delay: index * 0.08 }}
               whileHover={{ y: -8, transition: { duration: 0.25 } }}
-              className="group bg-white rounded-2xl overflow-hidden border border-border/30 hover:shadow-xl hover:shadow-primary/[0.06] hover:border-primary/20 transition-colors duration-300 cursor-pointer"
             >
+              <Link
+                href={`/recipe/${recipe.id}`}
+                className="group bg-white rounded-2xl overflow-hidden border border-border/30 hover:shadow-xl hover:shadow-primary/[0.06] hover:border-primary/20 transition-colors duration-300 block"
+              >
               {/* Recipe Image */}
               <div className="relative h-52 w-full overflow-hidden">
                 <Image
@@ -83,6 +87,7 @@ export default function RecipeShowcase() {
                   </div>
                 </div>
               </div>
+              </Link>
             </motion.div>
           ))}
         </div>
@@ -96,7 +101,7 @@ export default function RecipeShowcase() {
         >
           <a
             href="/recipe"
-            className="group inline-flex items-center gap-2.5 px-8 py-4 bg-text text-white font-bold rounded-xl hover:bg-text/90 transition-all duration-200 text-base"
+            className="group inline-flex items-center gap-2.5 px-8 py-4 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all duration-200 text-base"
           >
             Explorer toutes les recettes
             <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">

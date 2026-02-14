@@ -137,6 +137,10 @@ export default function GroceryShopping() {
                       <motion.div
                         key={item.id}
                         onClick={() => toggleItem(item.id)}
+                        onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleItem(item.id); } }}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`${isChecked ? 'Décocher' : 'Cocher'} ${item.name} (${item.qty})`}
                         className={`flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all duration-300 ${
                           isChecked 
                             ? 'bg-green-50/80 border border-green-200/40' 
@@ -185,7 +189,7 @@ export default function GroceryShopping() {
                   </div>
                   <button 
                     onClick={handleGoShopping}
-                    className="w-full py-4 bg-text text-white font-bold rounded-xl hover:bg-text/90 transition-all duration-200 text-base flex items-center justify-center gap-2"
+                    className="w-full py-4 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all duration-200 text-base flex items-center justify-center gap-2"
                   >
                     🛍️ Faire les Courses
                   </button>

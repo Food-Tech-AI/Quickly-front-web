@@ -30,7 +30,7 @@ export default function HowItWorks() {
         </motion.div>
 
         <div className="max-w-5xl mx-auto">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
             {howItWorks.map((step, index) => (
               <motion.div 
                 key={index} 
@@ -41,7 +41,7 @@ export default function HowItWorks() {
                 transition={{ duration: 0.5, delay: index * 0.12 }}
               >
                 {/* Connector line */}
-                {index < howItWorks.length - 1 && (
+                {index < howItWorks.length - 1 && index !== 1 && (
                   <div className="hidden lg:block absolute top-12 left-[60%] w-[80%] h-[2px]">
                     <motion.div 
                       className="w-full h-full bg-gradient-to-r from-primary/[0.3] to-primary/[0.05] rounded-full"

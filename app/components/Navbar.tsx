@@ -59,7 +59,7 @@ export default function Navbar() {
           {/* Logo */}
           <a href="/" className="flex items-center gap-2.5 group">
             <div className="w-10 h-10 bg-text rounded-xl flex items-center justify-center group-hover:scale-110 transition-all duration-300">
-              <span className="text-white font-black text-base">Q</span>
+              <span className="text-3xl group-hover:rotate-12 transition-transform">⚡</span>
             </div>
             <h1 className="text-xl font-black text-text">
               E-Quickly
@@ -91,7 +91,7 @@ export default function Navbar() {
                 <a href="/recipe/create" className="px-4 py-2.5 text-sm font-semibold text-primary border border-primary/30 rounded-xl hover:bg-primary hover:text-white transition-all duration-200">
                   + Créer
                 </a>
-                <button onClick={handleLogout} className="px-5 py-2.5 bg-text text-white text-sm font-bold rounded-xl hover:bg-text/90 transition-all duration-200">
+                <button onClick={handleLogout} className="px-5 py-2.5 bg-gray-100 text-text text-sm font-bold rounded-xl hover:bg-gray-200 transition-all duration-200">
                   Déconnexion
                 </button>
               </>
@@ -100,9 +100,9 @@ export default function Navbar() {
                 <a href="/login" className="px-4 py-2 text-sm font-semibold text-textSecondary hover:text-primary transition-colors duration-200">
                   Connexion
                 </a>
-                <a href="/recipe" className="px-6 py-2.5 bg-text text-white text-sm font-bold rounded-xl hover:bg-text/90 transition-all duration-200">
+                {/* <a href="/recipe" className="px-6 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 transition-all duration-200">
                   Explorer les recettes
-                </a>
+                </a> */}
               </>
             )}
           </div>
@@ -161,9 +161,9 @@ export default function Navbar() {
                     <a href="/login" className="px-4 py-3 text-text font-medium hover:bg-gray-50 rounded-xl transition-all text-center text-sm">
                       Connexion
                     </a>
-                    <a href="/recipe" className="mx-4 py-3 bg-text text-white font-bold rounded-xl text-center text-sm">
+                    {/* <a href="/recipe" className="mx-4 py-3 bg-primary text-white font-bold rounded-xl text-center text-sm">
                       Explorer les recettes
-                    </a>
+                    </a> */}
                   </>
                 )}
               </div>

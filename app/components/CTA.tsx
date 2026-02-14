@@ -14,22 +14,22 @@ export default function CTA() {
 
       {/* Floating food emojis with Framer Motion */}
       <motion.div
-        className="absolute top-16 left-[10%] text-6xl opacity-[0.08]"
+        className="absolute top-16 left-[10%] text-6xl opacity-[0.15]"
         animate={{ y: [0, -20, 0], rotate: [0, 8, 0] }}
         transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
       >🍕</motion.div>
       <motion.div
-        className="absolute top-24 right-[15%] text-5xl opacity-[0.08]"
+        className="absolute top-24 right-[15%] text-5xl opacity-[0.15]"
         animate={{ y: [0, 15, 0], rotate: [0, -5, 0] }}
         transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
       >🥗</motion.div>
       <motion.div
-        className="absolute bottom-20 left-[20%] text-5xl opacity-[0.08]"
+        className="absolute bottom-20 left-[20%] text-5xl opacity-[0.15]"
         animate={{ y: [0, -18, 0], rotate: [0, 6, 0] }}
         transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
       >🍰</motion.div>
       <motion.div
-        className="absolute bottom-16 right-[10%] text-6xl opacity-[0.08]"
+        className="absolute bottom-16 right-[10%] text-6xl opacity-[0.15]"
         animate={{ y: [0, 14, 0], rotate: [0, -8, 0] }}
         transition={{ duration: 6.5, repeat: Infinity, ease: 'easeInOut', delay: 1.5 }}
       >🍜</motion.div>
@@ -65,14 +65,14 @@ export default function CTA() {
           >
             <a
               href="/recipe"
-              className="px-10 py-4 bg-white text-text font-bold rounded-xl hover:bg-gray-50 transition-all duration-200 text-base flex items-center gap-2"
+              className="px-10 py-4 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all duration-200 text-base flex items-center gap-2"
             >
               <span>🍽️</span>
               <span>Explorer les Recettes</span>
             </a>
             <a
               href="/login"
-              className="px-10 py-4 bg-transparent text-white font-bold rounded-xl border-2 border-white/30 hover:border-white/60 hover:bg-white/[0.06] transition-all duration-200 text-base flex items-center gap-2"
+              className="px-10 py-4 bg-white text-text font-bold rounded-xl border-2 border-white hover:bg-white/90 transition-all duration-200 text-base flex items-center gap-2"
             >
               <span>✨</span>
               <span>Créer un Compte</span>

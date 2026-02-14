@@ -135,18 +135,21 @@ export const testimonials = [
     role: "Cuisinière Amateur",
     avatar: "https://i.pravatar.cc/150?img=1",
     text: "Cette appli a complètement transformé ma façon de cuisiner ! Je peux sauvegarder n'importe quelle recette de vidéo en quelques secondes.",
+    rating: 5,
   },
   {
     name: "Michel Dupont",
     role: "Blogueur Culinaire",
     avatar: "https://i.pravatar.cc/150?img=13",
     text: "L'extraction par IA est incroyablement précise. Ça me fait gagner tellement de temps pour planifier mon contenu.",
+    rating: 4,
   },
   {
     name: "Emma Leblanc",
     role: "Maman Active",
     avatar: "https://i.pravatar.cc/150?img=5",
     text: "La planification des repas n'a jamais été aussi simple. J'adore comment ma collection de recettes est organisée !",
+    rating: 5,
   },
 ];
 

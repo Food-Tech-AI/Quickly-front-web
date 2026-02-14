@@ -99,11 +99,12 @@ export default function Hero() {
                   onFocus={() => setIsFocused(true)}
                   onBlur={() => setIsFocused(false)}
                   placeholder="Chercher une recette..."
+                  aria-label="Rechercher une recette"
                   className="flex-1 px-4 py-5 bg-transparent outline-none text-text placeholder:text-textLight text-base"
                 />
                 <button
                   type="submit"
-                  className="px-7 py-3 bg-text text-white font-bold rounded-xl hover:bg-text/90 transition-all duration-200 text-sm whitespace-nowrap"
+                  className="px-7 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all duration-200 text-sm whitespace-nowrap"
                 >
                   Chercher
                 </button>
@@ -139,8 +140,8 @@ export default function Hero() {
               transition={{ duration: 0.6, delay: 0.7, ease: 'easeOut' }}
             >
               {[
-                { value: '900+', label: 'Recettes' },
-                { value: '50+', label: 'Catégories' },
+                { value: '2000+', label: 'Recettes' },
+                { value: '400+', label: 'Utilisateurs' },
                 { value: '4.9★', label: 'Note' },
               ].map((stat, i) => (
                 <div key={i} className="flex items-center gap-6">
@@ -155,10 +156,10 @@ export default function Hero() {
           </div>
 
           {/* Right - Hero Visual */}
-          <div className="relative hidden lg:flex items-center justify-center">
+          <div className="relative flex items-center justify-center">
             {/* Animated background glow */}
             <motion.div 
-              className="absolute w-[480px] h-[480px] rounded-full"
+              className="absolute w-[280px] h-[280px] lg:w-[480px] lg:h-[480px] rounded-full"
               style={{ background: 'linear-gradient(135deg, rgba(46,207,189,0.15) 0%, rgba(255,207,86,0.12) 50%, rgba(75,168,176,0.1) 100%)' }}
               animate={{ 
                 scale: [1, 1.08, 1],
@@ -181,14 +182,14 @@ export default function Hero() {
                 <img
                   src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&h=600&fit=crop"
                   alt="Salade fraîche délicieuse"
-                  className="w-[440px] h-[440px] object-cover rounded-[3rem] shadow-2xl shadow-black/10 border-[6px] border-white/80"
+                  className="w-[280px] h-[280px] lg:w-[440px] lg:h-[440px] object-cover rounded-[2rem] lg:rounded-[3rem] shadow-2xl shadow-black/10 border-4 lg:border-[6px] border-white/80"
                 />
               </motion.div>
             </motion.div>
 
             {/* Floating recipe card - top right */}
             <motion.div 
-              className="absolute top-4 right-4 z-20"
+              className="absolute top-4 right-4 z-20 hidden lg:block"
               initial={{ opacity: 0, x: 30, y: -20 }}
               animate={{ opacity: 1, x: 0, y: 0 }}
               transition={{ duration: 0.7, delay: 0.8 }}
@@ -209,7 +210,7 @@ export default function Hero() {
 
             {/* Floating recipe card - bottom left */}
             <motion.div 
-              className="absolute bottom-8 -left-4 z-20"
+              className="absolute bottom-8 -left-4 z-20 hidden lg:block"
               initial={{ opacity: 0, x: -30, y: 20 }}
               animate={{ opacity: 1, x: 0, y: 0 }}
               transition={{ duration: 0.7, delay: 1.0 }}
@@ -232,7 +233,7 @@ export default function Hero() {
 
             {/* Floating ingredient badges */}
             <motion.div
-              className="absolute top-[45%] -left-6 z-20"
+              className="absolute top-[45%] -left-6 z-20 hidden lg:block"
               initial={{ opacity: 0, scale: 0 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: 1.2, type: 'spring', stiffness: 200 }}
@@ -247,7 +248,7 @@ export default function Hero() {
             </motion.div>
 
             <motion.div
-              className="absolute bottom-[30%] right-0 z-20"
+              className="absolute bottom-[30%] right-0 z-20 hidden lg:block"
               initial={{ opacity: 0, scale: 0 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: 1.4, type: 'spring', stiffness: 200 }}
@@ -262,7 +263,7 @@ export default function Hero() {
             </motion.div>
 
             <motion.div
-              className="absolute top-2 left-16 z-20"
+              className="absolute top-2 left-16 z-20 hidden lg:block"
               initial={{ opacity: 0, scale: 0 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: 1.6, type: 'spring', stiffness: 200 }}
