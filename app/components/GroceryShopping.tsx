@@ -4,15 +4,16 @@ import { useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { track } from '@vercel/analytics';
+import { motion } from 'framer-motion';
 
 export default function GroceryShopping() {
   const groceryItems = [
-    { id: 1, name: "Fresh Salmon", qty: "500g", icon: "🐟" },
-    { id: 2, name: "Cherry Tomatoes", qty: "250g", icon: "🍅" },
-    { id: 3, name: "Pasta", qty: "400g", icon: "🍝" },
-    { id: 4, name: "Garlic", qty: "3 cloves", icon: "🧄" },
-    { id: 5, name: "Olive Oil", qty: "1 bottle", icon: "🫒" },
-    { id: 6, name: "Fresh Basil", qty: "1 bunch", icon: "🌿" },
+    { id: 1, name: "Saumon Frais", qty: "500g", icon: "🐟" },
+    { id: 2, name: "Tomates Cerises", qty: "250g", icon: "🍅" },
+    { id: 3, name: "Pâtes", qty: "400g", icon: "🍝" },
+    { id: 4, name: "Ail", qty: "3 gousses", icon: "🧄" },
+    { id: 5, name: "Huile d'Olive", qty: "1 bouteille", icon: "🫒" },
+    { id: 6, name: "Basilic Frais", qty: "1 bouquet", icon: "🌿" },
   ];
 
   const [checkedItems, setCheckedItems] = useState<number[]>([]);
@@ -28,8 +29,8 @@ export default function GroceryShopping() {
     );
 
     if (!isCurrentlyChecked && item) {
-      toast.success(`${item.icon} ${item.name} added to cart!`, {
-        description: `${item.qty} ready to buy`,
+      toast.success(`${item.icon} ${item.name} ajouté au panier !`, {
+        description: `${item.qty} prêt à acheter`,
         duration: 2000,
       });
     }
@@ -38,7 +39,6 @@ export default function GroceryShopping() {
   const handleGoShopping = () => {
     const remainingItems = totalCount - checkedCount;
     
-    // Track button click
     track('Go Shopping Button Clicked', {
       items_remaining: remainingItems,
       items_checked: checkedCount,
@@ -46,13 +46,13 @@ export default function GroceryShopping() {
     });
     
     if (remainingItems > 0) {
-      toast.info(`🛒 ${totalCount - checkedCount} items ready for shopping!`, {
-        description: 'Your grocery list is prepared',
+      toast.info(`🛒 ${totalCount - checkedCount} articles prêts pour les courses !`, {
+        description: 'Votre liste de courses est préparée',
         duration: 3000,
       });
     } else {
-      toast.success('✅ All items collected!', {
-        description: 'You\'re ready to checkout',
+      toast.success('✅ Tous les articles collectés !', {
+        description: 'Vous êtes prêt à passer à la caisse',
         duration: 3000,
       });
     }
@@ -62,141 +62,147 @@ export default function GroceryShopping() {
   const totalCount = groceryItems.length;
 
   return (
-    <section className="py-20 bg-gradient-to-br from-primary/10 via-background to-accent/10 relative overflow-hidden">
-      {/* Decorative background */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-20 left-20 text-9xl">🛒</div>
-        <div className="absolute bottom-20 right-20 text-9xl">🥗</div>
-      </div>
+    <section className="py-28 bg-background relative overflow-hidden">
+      {/* Decorative */}
+      <div className="absolute top-20 right-0 w-[400px] h-[400px] bg-accent/[0.06] rounded-full blur-3xl"></div>
+      <div className="absolute bottom-20 left-0 w-[350px] h-[350px] bg-primary/[0.04] rounded-full blur-3xl"></div>
 
       <div className="container mx-auto px-6 relative z-10">
         <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left side - Text content */}
-            <div>
-              <div className="inline-block px-4 py-2 bg-primary/20 rounded-full mb-6">
-                <span className="text-primary font-semibold">🛒 Smart Shopping</span>
-              </div>
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            {/* Left - Text content */}
+            <motion.div
+              initial={{ opacity: 0, x: -40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: '-100px' }}
+              transition={{ duration: 0.7 }}
+            >
+              <span className="inline-flex items-center gap-2 px-5 py-2 bg-primary/[0.08] text-primary font-semibold rounded-full text-sm tracking-wide border border-primary/[0.12]">
+                🛒 COURSES INTELLIGENTES
+              </span>
               
-              <h2 className="text-4xl md:text-5xl font-bold text-text mb-6">
-                Shop Your Ingredients
-                <br />
-                <span className="text-primary">With One Click</span>
+              <h2 className="text-4xl md:text-5xl lg:text-[3.25rem] font-black text-text mt-6 mb-6 leading-[1.15] tracking-[-0.02em]">
+                Faites vos courses{' '}
+                <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">en un clic</span>
               </h2>
               
-              <p className="text-xl text-textSecondary mb-8 leading-relaxed">
-                Never forget an ingredient again! Add all your meal plan ingredients to your grocery cart and shop smarter.
+              <p className="text-lg text-textSecondary mb-10 leading-relaxed max-w-md">
+                N&apos;oubliez plus jamais un ingrédient ! Ajoutez tous les ingrédients de votre planning au panier et faites vos courses intelligemment.
               </p>
 
-              <div className="space-y-4 mb-8">
-                <div className="flex items-start gap-4 bg-surface p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow">
-                  <div className="text-3xl mt-1">📋</div>
-                  <div>
-                    <h3 className="font-bold text-text text-lg mb-1">Auto-Generated Lists</h3>
-                    <p className="text-textSecondary">Ingredients from all your planned meals automatically combine into one organized list.</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4 bg-surface p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow">
-                  <div className="text-3xl mt-1">🛒</div>
-                  <div>
-                    <h3 className="font-bold text-text text-lg mb-1">Smart Grocery Cart</h3>
-                    <p className="text-textSecondary">Add ingredients to your cart like an online shopping basket - ready to buy at your favorite store.</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4 bg-surface p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow">
-                  <div className="text-3xl mt-1">✅</div>
-                  <div>
-                    <h3 className="font-bold text-text text-lg mb-1">Check Off as You Shop</h3>
-                    <p className="text-textSecondary">Mark items as purchased while shopping. Never miss an ingredient or buy duplicates.</p>
-                  </div>
-                </div>
+              <div className="space-y-3 mb-10">
+                {[
+                  { icon: '📋', color: 'from-primary/[0.12] to-primary/[0.05]', title: 'Listes Auto-Générées', desc: 'Les ingrédients de tous vos repas planifiés se combinent en une liste organisée.' },
+                  { icon: '🛒', color: 'from-accent/[0.15] to-accent/[0.05]', title: 'Panier Intelligent', desc: 'Ajoutez les ingrédients au panier comme dans une boutique en ligne — prêt à acheter.' },
+                  { icon: '✅', color: 'from-green-100 to-green-50', title: 'Cochez en Faisant vos Courses', desc: 'Marquez les articles achetés pendant vos courses. Ne ratez plus jamais un ingrédient.' },
+                ].map((item, i) => (
+                  <motion.div
+                    key={i}
+                    className="flex items-start gap-4 bg-white p-5 rounded-2xl border border-border/40 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/[0.04] transition-all duration-300"
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: i * 0.1 + 0.2 }}
+                  >
+                    <div className={`w-12 h-12 bg-gradient-to-br ${item.color} rounded-xl flex items-center justify-center text-2xl flex-shrink-0`}>{item.icon}</div>
+                    <div>
+                      <h3 className="font-bold text-text mb-1 text-[15px]">{item.title}</h3>
+                      <p className="text-textSecondary text-sm leading-relaxed">{item.desc}</p>
+                    </div>
+                  </motion.div>
+                ))}
               </div>
+            </motion.div>
 
-              <button 
-                onClick={() => {
-                  track('Start Shopping Smarter Clicked');
-                  toast.success('🎉 Welcome to Quickly!', {
-                    description: 'Download the app to start shopping smarter',
-                    duration: 3000,
-                  });
-                }}
-                className="px-8 py-4 gradient-button text-white font-bold rounded-xl hover:shadow-xl hover:scale-105 transition-all duration-300 text-lg"
-              >
-                Start Shopping Smarter
-              </button>
-            </div>
-
-            {/* Right side - Visual representation */}
-            <div className="relative">
-              <div className="bg-surface rounded-2xl shadow-2xl p-8 border-2 border-primary/20">
+            {/* Right - Grocery Cart UI */}
+            <motion.div 
+              className="relative"
+              initial={{ opacity: 0, x: 40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: '-100px' }}
+              transition={{ duration: 0.7, delay: 0.15 }}
+            >
+              <div className="bg-white rounded-3xl shadow-2xl shadow-black/[0.04] p-7 border border-border/30">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-2xl font-bold text-text">My Grocery Cart</h3>
-                  <span className="bg-primary text-white px-4 py-2 rounded-full font-bold">
-                    {totalCount - checkedCount} items
+                  <h3 className="text-lg font-bold text-text">Mon Panier 🛍️</h3>
+                  <span className="bg-primary/[0.1] text-primary px-4 py-1.5 rounded-full font-bold text-sm">
+                    {totalCount - checkedCount} articles
                   </span>
                 </div>
 
-                <div className="space-y-3">
-                  {groceryItems.map((item) => {
+                <div className="space-y-2">
+                  {groceryItems.map((item, i) => {
                     const isChecked = checkedItems.includes(item.id);
                     return (
-                      <div
+                      <motion.div
                         key={item.id}
-                        className={`flex items-center justify-between p-4 rounded-lg transition-all ${
+                        onClick={() => toggleItem(item.id)}
+                        className={`flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all duration-300 ${
                           isChecked 
-                            ? 'bg-success/10 opacity-60' 
-                            : 'bg-backgroundSecondary hover:bg-primary/10'
+                            ? 'bg-green-50/80 border border-green-200/40' 
+                            : 'bg-gray-50/60 hover:bg-primary/[0.04] border border-transparent'
                         }`}
+                        initial={{ opacity: 0, y: 10 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.3, delay: i * 0.05 + 0.3 }}
+                        whileTap={{ scale: 0.98 }}
                       >
                         <div className="flex items-center gap-3">
                           <span className="text-2xl">{item.icon}</span>
                           <div>
-                            <p className={`font-semibold ${isChecked ? 'line-through text-textSecondary' : 'text-text'}`}>
+                            <p className={`font-semibold text-sm ${isChecked ? 'line-through text-textSecondary' : 'text-text'}`}>
                               {item.name}
                             </p>
-                            <p className="text-sm text-textSecondary">{item.qty}</p>
+                            <p className="text-xs text-textLight">{item.qty}</p>
                           </div>
                         </div>
                         <Checkbox 
                           checked={isChecked}
                           onCheckedChange={() => toggleItem(item.id)}
                         />
-                      </div>
+                      </motion.div>
                     );
                   })}
                 </div>
 
-                <div className="mt-6 pt-6 border-t border-border">
+                <div className="mt-6 pt-5 border-t border-border/20">
                   <div className="mb-4 text-center">
-                    <p className="text-sm text-textSecondary mb-1">Click checkboxes to mark as collected</p>
-                    <p className="text-lg font-bold text-text">
+                    <p className="text-sm text-textSecondary">
                       {checkedCount === totalCount ? (
-                        <span className="text-success">✅ All items collected!</span>
+                        <span className="text-green-600 font-semibold">✅ Tous les articles collectés !</span>
                       ) : (
-                        <span>{checkedCount} of {totalCount} items checked</span>
+                        <span>{checkedCount} sur {totalCount} articles cochés</span>
                       )}
                     </p>
+                    <div className="mt-3 w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <motion.div 
+                        className="h-full bg-primary rounded-full"
+                        animate={{ width: `${(checkedCount / totalCount) * 100}%` }}
+                        transition={{ duration: 0.4, ease: 'easeOut' }}
+                      />
+                    </div>
                   </div>
                   <button 
                     onClick={handleGoShopping}
-                    className="w-full py-5 bg-gradient-to-r from-[#40E0D8] to-[#5EBEC4] text-white font-bold rounded-xl hover:shadow-2xl hover:scale-105 transition-all text-lg flex items-center justify-center gap-3 group shadow-lg"
+                    className="w-full py-4 bg-text text-white font-bold rounded-xl hover:bg-text/90 transition-all duration-200 text-base flex items-center justify-center gap-2"
                   >
-                    <span className="text-3xl group-hover:scale-110 transition-transform">🛍️</span>
-                    <span className="text-xl">Go Shopping at Your Store</span>
+                    🛍️ Faire les Courses
                   </button>
-                  <p className="text-xs text-center text-textSecondary mt-3">
-                    💡 This list is ready for your favorite grocery store
-                  </p>
                 </div>
               </div>
 
               {/* Floating badge */}
-              <div className="absolute -top-4 -right-4 bg-accent text-text px-6 py-3 rounded-full shadow-xl font-bold transform rotate-12 border-4 border-white">
-                ✨ All in One Place!
-              </div>
-            </div>
+              <motion.div 
+                className="absolute -top-4 -right-4 bg-accent text-text px-5 py-2.5 rounded-2xl shadow-xl font-bold text-sm border-4 border-white"
+                initial={{ opacity: 0, scale: 0, rotate: 0 }}
+                whileInView={{ opacity: 1, scale: 1, rotate: 6 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.6, type: 'spring', stiffness: 200 }}
+              >
+                ✨ Tout en un !
+              </motion.div>
+            </motion.div>
           </div>
         </div>
       </div>

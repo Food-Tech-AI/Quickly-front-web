@@ -298,10 +298,12 @@ export default function RecipePage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen py-20 container mx-auto px-6">
-        <div className="flex flex-col items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-          <p className="text-textSecondary">Loading recipes...</p>
+      <main className="min-h-screen pt-28 pb-16 bg-background">
+        <div className="container mx-auto px-6">
+          <div className="flex flex-col items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary/20 border-t-primary mb-4"></div>
+            <p className="text-textSecondary text-sm">Chargement des recettes...</p>
+          </div>
         </div>
       </main>
     );
@@ -309,32 +311,39 @@ export default function RecipePage() {
 
   if (error) {
     return (
-      <main className="min-h-screen py-20 container mx-auto px-6">
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-          <p className="text-error font-medium mb-2">Erreur de chargement des recettes</p>
-          <p className="text-error/80 text-sm">{error}</p>
+      <main className="min-h-screen pt-28 pb-16 bg-background">
+        <div className="container mx-auto px-6">
+          <div className="bg-red-50 border border-red-100 rounded-2xl p-8 text-center max-w-lg mx-auto">
+            <div className="text-4xl mb-3">😕</div>
+            <p className="text-red-600 font-semibold mb-1">Erreur de chargement</p>
+            <p className="text-red-500/80 text-sm">{error}</p>
+          </div>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen py-20 bg-background">
-      <div className="container mx-auto px-6">
+    <main className="min-h-screen pt-28 pb-16 bg-background">
+      <div className="container mx-auto px-6 max-w-7xl">
         {/* Header */}
-        <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="mb-10 flex flex-col md:flex-row md:items-end md:justify-between gap-5">
           <div>
-            <h1 className="text-4xl font-bold text-text mb-3">Mes Recettes</h1>
-            <p className="text-textSecondary text-lg">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-primary/[0.08] rounded-full mb-4">
+              <span className="text-sm">📖</span>
+              <span className="text-xs font-semibold text-primary tracking-wide uppercase">Collection</span>
+            </div>
+            <h1 className="text-3xl md:text-4xl font-black text-text mb-2 tracking-tight">Mes Recettes</h1>
+            <p className="text-textSecondary text-[15px]">
               Parcourez et gérez votre collection de recettes
             </p>
           </div>
           <Link 
             href="/recipe/create"
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 gradient-button text-white font-semibold rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-300"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary hover:bg-secondary text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-primary/15 transition-all duration-200 text-sm shrink-0"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
             </svg>
             Créer une recette
           </Link>
@@ -351,10 +360,10 @@ export default function RecipePage() {
               </div>
               <input
                 type="text"
-                placeholder="Rechercher des recettes (ex: 'petit-déjeuner sain', 'dîner rapide', 'poulet')..."
+                placeholder="Rechercher des recettes (ex: 'petit-déjeuner sain', 'dîner rapide')..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-surface text-text placeholder-textLight"
+                className="w-full pl-12 pr-4 py-3.5 border border-border/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all bg-white text-text placeholder-textLight text-sm"
               />
               {searchQuery && (
                 <button
@@ -426,7 +435,7 @@ export default function RecipePage() {
               <div className="relative flex-1 max-w-md" ref={categoryDropdownRef}>
                 <button
                   onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
-                  className="w-full flex items-center justify-between gap-3 px-4 py-3 bg-white border border-gray-200 rounded-xl hover:border-primary/50 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-left"
+                  className="w-full flex items-center justify-between gap-3 px-4 py-3 bg-white border border-border/50 rounded-xl hover:border-primary/30 focus:border-primary/40 focus:ring-2 focus:ring-primary/10 transition-all text-left"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <span className="text-lg">{selectedCategory ? '🏷️' : '🍽️'}</span>
@@ -455,7 +464,7 @@ export default function RecipePage() {
 
                 {/* Dropdown Menu */}
                 {categoryDropdownOpen && (
-                  <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
+                  <div className="absolute z-50 w-full mt-2 bg-white border border-border/30 rounded-2xl shadow-xl shadow-black/[0.08] overflow-hidden">
                     {/* Search Input */}
                     <div className="p-3 border-b border-gray-100">
                       <div className="relative">
@@ -472,7 +481,7 @@ export default function RecipePage() {
                           placeholder="Rechercher une catégorie..."
                           value={categorySearch}
                           onChange={(e) => setCategorySearch(e.target.value)}
-                          className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none"
+                          className="w-full pl-10 pr-4 py-2.5 text-sm border border-border/40 rounded-xl focus:border-primary/40 focus:ring-2 focus:ring-primary/10 outline-none transition-all"
                           autoFocus
                         />
                       </div>
@@ -577,32 +586,32 @@ export default function RecipePage() {
 
         {/* Recipes Grid */}
         {recipes.length > 0 ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {recipes.map((recipe) => (
               <Link 
                 key={recipe.id} 
                 href={`/recipe/${recipe.id}`}
-                className="group bg-surface rounded-xl shadow-sm hover:shadow-xl border border-border overflow-hidden transition-all duration-300 hover:-translate-y-1"
+                className="group bg-white rounded-2xl border border-border/30 overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-black/[0.06] hover:border-primary/15"
               >
                 {/* Recipe Image */}
                 {recipe.image ? (
-                  <div className="aspect-video bg-gradient-to-br from-primary/10 to-secondary/10 overflow-hidden">
+                  <div className="aspect-[16/10] bg-gray-50 overflow-hidden">
                     <img
                       src={recipe.image}
                       alt={recipe.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     />
                   </div>
                 ) : (
-                  <div className="aspect-video bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center">
-                    <span className="text-6xl">🍳</span>
+                  <div className="aspect-[16/10] bg-gradient-to-br from-primary/[0.06] to-secondary/[0.06] flex items-center justify-center">
+                    <span className="text-5xl">🍳</span>
                   </div>
                 )}
 
                 {/* Recipe Info */}
-                <div className="p-6">
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <h3 className="font-bold text-xl text-text group-hover:text-primary transition-colors line-clamp-2 flex-1">
+                <div className="p-5">
+                  <div className="flex items-start justify-between gap-2 mb-1.5">
+                    <h3 className="font-bold text-[17px] text-text group-hover:text-primary transition-colors duration-200 line-clamp-2 flex-1 leading-snug">
                       {recipe.title_fr || recipe.title}
                     </h3>
                     {/* {recipe.similarity !== undefined && (
@@ -612,42 +621,42 @@ export default function RecipePage() {
                     )} */}
                   </div>
                   {(recipe.description_fr || recipe.description) && (
-                    <p className="text-textSecondary text-sm mb-4 line-clamp-2">
+                    <p className="text-textLight text-sm mb-3 line-clamp-2 leading-relaxed">
                       {recipe.description_fr || recipe.description}
                     </p>
                   )}
                   
                   {/* Categories */}
                   {recipe.categories && recipe.categories.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-4">
+                    <div className="flex flex-wrap gap-1.5 mb-3">
                       {recipe.categories.slice(0, 3).map((cat, idx) => (
-                        <span key={idx} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                        <span key={idx} className="text-[11px] font-medium bg-primary/[0.07] text-primary/80 px-2.5 py-1 rounded-lg">
                           {typeof cat === 'object' ? cat.name : cat}
                         </span>
                       ))}
                     </div>
                   )}
                   {recipe.category && !recipe.categories && (
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                      <span className="text-[11px] font-medium bg-primary/[0.07] text-primary/80 px-2.5 py-1 rounded-lg">
                         {typeof recipe.category === 'object' ? recipe.category.name : recipe.category}
                       </span>
                     </div>
                   )}
 
                   {/* Recipe Meta */}
-                  <div className="flex items-center gap-4 text-xs text-textLight">
+                  <div className="flex items-center gap-3 text-xs text-textSecondary">
                     {recipe.prepTime && (
-                      <div className="flex items-center gap-1">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <div className="flex items-center gap-1.5 bg-gray-50 px-2.5 py-1.5 rounded-lg">
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <span>{recipe.prepTime} min</span>
                       </div>
                     )}
                     {recipe.servings && (
-                      <div className="flex items-center gap-1">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <div className="flex items-center gap-1.5 bg-gray-50 px-2.5 py-1.5 rounded-lg">
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
                         <span>{recipe.servings} portions</span>
@@ -659,39 +668,36 @@ export default function RecipePage() {
             ))}
           </div>
         ) : (
-          <div className="bg-surface rounded-xl shadow-sm border border-border p-12 text-center">
+          <div className="bg-white rounded-2xl border border-border/30 p-14 text-center max-w-lg mx-auto">
             {searchQuery ? (
               <>
-                <div className="text-6xl mb-4">🔍</div>
-                <h3 className="text-xl font-semibold text-text mb-2">Aucune recette trouvée</h3>
-                <p className="text-textSecondary mb-6">
-                  Aucune recette ne correspond à votre recherche "{searchQuery}". Essayez un autre terme.
+                <div className="text-5xl mb-5">🔍</div>
+                <h3 className="text-lg font-bold text-text mb-2">Aucune recette trouvée</h3>
+                <p className="text-textSecondary text-sm mb-6">
+                  Aucune recette ne correspond à "{searchQuery}". Essayez un autre terme.
                 </p>
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl hover:bg-secondary transition-colors font-medium"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl hover:bg-secondary transition-colors duration-200 font-semibold text-sm"
                 >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
                   Effacer la recherche
                 </button>
               </>
             ) : (
               <>
-                <div className="text-6xl mb-4">📝</div>
-                <h3 className="text-xl font-semibold text-text mb-2">Pas encore de recettes</h3>
-                <p className="text-textSecondary mb-6">
-                  Commencez à construire votre collection en ajoutant votre première recette !
+                <div className="text-5xl mb-5">📝</div>
+                <h3 className="text-lg font-bold text-text mb-2">Pas encore de recettes</h3>
+                <p className="text-textSecondary text-sm mb-6">
+                  Commencez votre collection en ajoutant votre première recette !
                 </p>
                 <Link
                   href="/create-recipe"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl hover:bg-secondary transition-colors font-medium"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl hover:bg-secondary transition-colors duration-200 font-semibold text-sm"
                 >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                   </svg>
-                  Ajouter votre première recette
+                  Ajouter une recette
                 </Link>
               </>
             )}
@@ -700,7 +706,7 @@ export default function RecipePage() {
         
         {/* Pagination */}
         {pagination && pagination.totalPages > 1 && !searchQuery && (
-          <div className="mt-12">
+          <div className="mt-14">
             <Pagination
               currentPage={currentPage}
               totalPages={pagination.totalPages}
@@ -712,8 +718,8 @@ export default function RecipePage() {
             />
             
             {/* Pagination Info */}
-            <div className="mt-4 text-center text-sm text-textSecondary">
-              Affichage de {((currentPage - 1) * pagination.limit) + 1} à {Math.min(currentPage * pagination.limit, pagination.total)} sur {pagination.total} recettes
+            <div className="mt-4 text-center text-xs text-textLight">
+              {((currentPage - 1) * pagination.limit) + 1}–{Math.min(currentPage * pagination.limit, pagination.total)} sur {pagination.total} recettes
             </div>
           </div>
         )}
