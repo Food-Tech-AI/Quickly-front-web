@@ -23,7 +23,7 @@ export default function Testimonials() {
           </span>
           <h2 className="text-4xl md:text-5xl lg:text-[3.25rem] font-black text-text mt-6 mb-5 leading-[1.15] tracking-[-0.02em]">
             Adoré par les{' '}
-            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Cuisiniers</span>
+            <span className="from-primary to-secondary bg-clip-text">Cuisiniers</span>
           </h2>
           <p className="text-lg text-textSecondary max-w-lg mx-auto leading-relaxed">
             Découvrez ce que notre communauté dit de son expérience culinaire.

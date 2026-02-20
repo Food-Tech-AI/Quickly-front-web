@@ -23,7 +23,7 @@ export default function Features() {
           </span>
           <h2 className="text-4xl md:text-5xl lg:text-[3.25rem] font-black text-text mt-6 mb-5 leading-[1.15] tracking-[-0.02em]">
             Tout ce qu&apos;il faut pour{' '}
-            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">cuisiner mieux</span>
+            <span className="from-primary to-secondary bg-clip-text">cuisiner mieux</span>
           </h2>
           <p className="text-lg text-textSecondary max-w-lg mx-auto leading-relaxed">
             Des fonctionnalités puissantes conçues pour rendre votre expérience culinaire fluide et agréable.
