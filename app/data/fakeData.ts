@@ -74,11 +74,6 @@ export const features = [
     description: "Notre IA extrait automatiquement les ingrédients, les étapes et les temps de cuisson à partir des vidéos et publications.",
   },
   {
-    icon: "🥗",
-    title: "Association Intelligente",
-    description: "Reconnaissance intelligente des ingrédients avec catégorisation hiérarchique pour une meilleure organisation.",
-  },
-  {
     icon: "📅",
     title: "Planification des Repas",
     description: "Ajoutez des recettes à votre planning hebdomadaire, puis générez automatiquement vos listes de courses.",

@@ -83,7 +83,7 @@ export default function GroceryShopping() {
               
               <h2 className="text-4xl md:text-5xl lg:text-[3.25rem] font-black text-text mt-6 mb-6 leading-[1.15] tracking-[-0.02em]">
                 Faites vos courses{' '}
-                <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">en un clic</span>
+                <span className="from-primary to-secondary bg-clip-text">en un clic</span>
               </h2>
               
               <p className="text-lg text-textSecondary mb-10 leading-relaxed max-w-md">
