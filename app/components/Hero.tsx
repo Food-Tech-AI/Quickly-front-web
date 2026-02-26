@@ -47,7 +47,7 @@ export default function Hero() {
             >
               <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary/[0.08] text-primary font-semibold rounded-full text-sm tracking-wide border border-primary/[0.12]">
                 <span className="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
-                RECETTES & COURSES INTELLIGENTES
+                SMART RECIPES & SHOPPING
               </span>
             </motion.div>
 
@@ -57,12 +57,12 @@ export default function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.15, ease: 'easeOut' }}
             >
-              Bon{' '}
-              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Goût</span>
+              Great{' '}
+              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Taste</span>
               .&nbsp;😋
               <br />
-              Bon{' '}
-              <span className="bg-gradient-to-r from-accent to-[#FF9F43] bg-clip-text text-transparent">Sens</span>
+              Great{' '}
+              <span className="bg-gradient-to-r from-accent to-[#FF9F43] bg-clip-text text-transparent">Sense</span>
               .&nbsp;✨
             </motion.h1>
 
@@ -72,7 +72,7 @@ export default function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.3, ease: 'easeOut' }}
             >
-              Découvrez des centaines de recettes délicieuses, ajoutez vos ingrédients au panier et faites vos courses en un clic.
+              Discover hundreds of delicious recipes, add ingredients to your cart, and shop in one click.
             </motion.p>
 
             {/* Search Bar */}
@@ -98,15 +98,15 @@ export default function Hero() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => setIsFocused(true)}
                   onBlur={() => setIsFocused(false)}
-                  placeholder="Chercher une recette..."
-                  aria-label="Rechercher une recette"
+                  placeholder="Search for a recipe..."
+                  aria-label="Search for a recipe"
                   className="flex-1 px-4 py-5 bg-transparent outline-none text-text placeholder:text-textLight text-base"
                 />
                 <button
                   type="submit"
                   className="px-7 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all duration-200 text-sm whitespace-nowrap"
                 >
-                  Chercher
+                  Search
                 </button>
               </div>
             </motion.form>
@@ -118,7 +118,7 @@ export default function Hero() {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.6 }}
             >
-              {['🍝 Pasta', '🥗 Salade', '🍰 Dessert', '🍜 Soupe'].map((tag) => (
+              {['🍝 Pasta', '🥗 Salad', '🍰 Dessert', '🍜 Soup'].map((tag) => (
                 <button
                   key={tag}
                   onClick={() => {
@@ -140,9 +140,9 @@ export default function Hero() {
               transition={{ duration: 0.6, delay: 0.7, ease: 'easeOut' }}
             >
               {[
-                { value: '2000+', label: 'Recettes' },
-                { value: '400+', label: 'Utilisateurs' },
-                { value: '4.9★', label: 'Note' },
+                { value: '2000+', label: 'Recipes' },
+                { value: '400+', label: 'Users' },
+                { value: '4.9★', label: 'Rating' },
               ].map((stat, i) => (
                 <div key={i} className="flex items-center gap-6">
                   <div>
@@ -181,7 +181,7 @@ export default function Hero() {
               >
                 <img
                   src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&h=600&fit=crop"
-                  alt="Salade fraîche délicieuse"
+                  alt="Fresh delicious salad"
                   className="w-[280px] h-[280px] lg:w-[440px] lg:h-[440px] object-cover rounded-[2rem] lg:rounded-[3rem] shadow-2xl shadow-black/10 border-4 lg:border-[6px] border-white/80"
                 />
               </motion.div>
@@ -201,8 +201,8 @@ export default function Hero() {
               >
                 <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-50 rounded-xl flex items-center justify-center text-2xl">🥗</div>
                 <div>
-                  <p className="font-bold text-text text-sm">Salade César</p>
-                  <p className="text-xs text-textSecondary">15 min • Facile</p>
+                  <p className="font-bold text-text text-sm">Caesar Salad</p>
+                  <p className="text-xs text-textSecondary">15 min • Easy</p>
                 </div>
                 <div className="ml-2 text-accent text-lg">★</div>
               </motion.div>
@@ -223,7 +223,7 @@ export default function Hero() {
                 <div className="w-12 h-12 bg-gradient-to-br from-amber-100 to-orange-50 rounded-xl flex items-center justify-center text-2xl">🍝</div>
                 <div>
                   <p className="font-bold text-text text-sm">Carbonara</p>
-                  <p className="text-xs text-textSecondary">25 min • Moyen</p>
+                  <p className="text-xs text-textSecondary">25 min • Medium</p>
                 </div>
                 <div className="ml-2">
                   <span className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-1 rounded-full">TOP</span>
@@ -289,4 +289,3 @@ export default function Hero() {
     </section>
   );
 }
-
