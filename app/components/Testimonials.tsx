@@ -19,14 +19,14 @@ export default function Testimonials() {
           transition={{ duration: 0.6 }}
         >
           <span className="inline-flex items-center gap-2 px-5 py-2 bg-accent/[0.15] text-text font-semibold rounded-full text-sm tracking-wide border border-accent/[0.1]">
-            💬 TÉMOIGNAGES
+            💬 TESTIMONIALS
           </span>
           <h2 className="text-4xl md:text-5xl lg:text-[3.25rem] font-black text-text mt-6 mb-5 leading-[1.15] tracking-[-0.02em]">
-            Adoré par les{' '}
-            <span className="from-primary to-secondary bg-clip-text">Cuisiniers</span>
+            Loved by{' '}
+            <span className="from-primary to-secondary bg-clip-text">Home Cooks</span>
           </h2>
           <p className="text-lg text-textSecondary max-w-lg mx-auto leading-relaxed">
-            Découvrez ce que notre communauté dit de son expérience culinaire.
+            See what our community says about the cooking experience.
           </p>
         </motion.div>
 
@@ -74,4 +74,3 @@ export default function Testimonials() {
     </section>
   );
 }
-

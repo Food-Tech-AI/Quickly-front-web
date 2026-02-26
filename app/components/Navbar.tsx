@@ -39,10 +39,10 @@ export default function Navbar() {
   }
 
   const navLinks = [
-    { href: '#features', label: 'Fonctionnalités' },
-    { href: '#how-it-works', label: 'Comment ça marche' },
-    { href: '#recipes', label: 'Recettes' },
-    { href: '/recipe', label: 'Explorer' },
+    { href: '#features', label: 'Features' },
+    { href: '#how-it-works', label: 'How It Works' },
+    { href: '#recipes', label: 'Recipes' },
+    { href: '/recipe', label: 'Explore' },
   ];
 
   return (
@@ -86,22 +86,22 @@ export default function Navbar() {
             ) : authenticated ? (
               <>
                 <a href="/recipe" className="px-4 py-2 text-sm font-semibold text-textSecondary hover:text-primary transition-colors duration-200">
-                  Mes Recettes
+                  My Recipes
                 </a>
                 <a href="/recipe/create" className="px-4 py-2.5 text-sm font-semibold text-primary border border-primary/30 rounded-xl hover:bg-primary hover:text-white transition-all duration-200">
-                  + Créer
+                  + Create
                 </a>
                 <button onClick={handleLogout} className="px-5 py-2.5 bg-gray-100 text-text text-sm font-bold rounded-xl hover:bg-gray-200 transition-all duration-200">
-                  Déconnexion
+                  Log out
                 </button>
               </>
             ) : (
               <>
                 <a href="/login" className="px-4 py-2 text-sm font-semibold text-textSecondary hover:text-primary transition-colors duration-200">
-                  Connexion
+                  Sign in
                 </a>
                 {/* <a href="/recipe" className="px-6 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 transition-all duration-200">
-                  Explorer les recettes
+                  Explore recipes
                 </a> */}
               </>
             )}
@@ -150,19 +150,19 @@ export default function Navbar() {
                 {authenticated ? (
                   <>
                     <a href="/recipe/create" className="px-4 py-3 text-primary font-semibold hover:bg-primary/[0.05] rounded-xl transition-all">
-                      + Créer une recette
+                      + Create a recipe
                     </a>
                     <button onClick={handleLogout} className="mx-4 py-3 bg-text text-white font-bold rounded-xl text-sm">
-                      Déconnexion
+                      Log out
                     </button>
                   </>
                 ) : (
                   <>
                     <a href="/login" className="px-4 py-3 text-text font-medium hover:bg-gray-50 rounded-xl transition-all text-center text-sm">
-                      Connexion
+                      Sign in
                     </a>
                     {/* <a href="/recipe" className="mx-4 py-3 bg-primary text-white font-bold rounded-xl text-center text-sm">
-                      Explorer les recettes
+                      Explore recipes
                     </a> */}
                   </>
                 )}
@@ -174,4 +174,3 @@ export default function Navbar() {
     </motion.nav>
   );
 }
-

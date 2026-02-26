@@ -8,12 +8,12 @@ import { motion } from 'framer-motion';
 
 export default function GroceryShopping() {
   const groceryItems = [
-    { id: 1, name: "Saumon Frais", qty: "500g", icon: "🐟" },
-    { id: 2, name: "Tomates Cerises", qty: "250g", icon: "🍅" },
-    { id: 3, name: "Pâtes", qty: "400g", icon: "🍝" },
-    { id: 4, name: "Ail", qty: "3 gousses", icon: "🧄" },
-    { id: 5, name: "Huile d'Olive", qty: "1 bouteille", icon: "🫒" },
-    { id: 6, name: "Basilic Frais", qty: "1 bouquet", icon: "🌿" },
+    { id: 1, name: "Fresh Salmon", qty: "500g", icon: "🐟" },
+    { id: 2, name: "Cherry Tomatoes", qty: "250g", icon: "🍅" },
+    { id: 3, name: "Pasta", qty: "400g", icon: "🍝" },
+    { id: 4, name: "Garlic", qty: "3 cloves", icon: "🧄" },
+    { id: 5, name: "Olive Oil", qty: "1 bottle", icon: "🫒" },
+    { id: 6, name: "Fresh Basil", qty: "1 bunch", icon: "🌿" },
   ];
 
   const [checkedItems, setCheckedItems] = useState<number[]>([]);
@@ -29,8 +29,8 @@ export default function GroceryShopping() {
     );
 
     if (!isCurrentlyChecked && item) {
-      toast.success(`${item.icon} ${item.name} ajouté au panier !`, {
-        description: `${item.qty} prêt à acheter`,
+      toast.success(`${item.icon} ${item.name} added to cart!`, {
+        description: `${item.qty} ready to buy`,
         duration: 2000,
       });
     }
@@ -46,13 +46,13 @@ export default function GroceryShopping() {
     });
     
     if (remainingItems > 0) {
-      toast.info(`🛒 ${totalCount - checkedCount} articles prêts pour les courses !`, {
-        description: 'Votre liste de courses est préparée',
+      toast.info(`🛒 ${totalCount - checkedCount} items ready for shopping!`, {
+        description: 'Your shopping list is ready',
         duration: 3000,
       });
     } else {
-      toast.success('✅ Tous les articles collectés !', {
-        description: 'Vous êtes prêt à passer à la caisse',
+      toast.success('✅ All items collected!', {
+        description: "You're ready to checkout",
         duration: 3000,
       });
     }
@@ -78,23 +78,23 @@ export default function GroceryShopping() {
               transition={{ duration: 0.7 }}
             >
               <span className="inline-flex items-center gap-2 px-5 py-2 bg-primary/[0.08] text-primary font-semibold rounded-full text-sm tracking-wide border border-primary/[0.12]">
-                🛒 COURSES INTELLIGENTES
+                🛒 SMART SHOPPING
               </span>
               
               <h2 className="text-4xl md:text-5xl lg:text-[3.25rem] font-black text-text mt-6 mb-6 leading-[1.15] tracking-[-0.02em]">
-                Faites vos courses{' '}
-                <span className="from-primary to-secondary bg-clip-text">en un clic</span>
+                Do your shopping{' '}
+                <span className="from-primary to-secondary bg-clip-text">in one click</span>
               </h2>
               
               <p className="text-lg text-textSecondary mb-10 leading-relaxed max-w-md">
-                N&apos;oubliez plus jamais un ingrédient ! Ajoutez tous les ingrédients de votre planning au panier et faites vos courses intelligemment.
+                Never miss an ingredient again. Add all ingredients from your weekly plan to your cart and shop smarter.
               </p>
 
               <div className="space-y-3 mb-10">
                 {[
-                  { icon: '📋', color: 'from-primary/[0.12] to-primary/[0.05]', title: 'Listes Auto-Générées', desc: 'Les ingrédients de tous vos repas planifiés se combinent en une liste organisée.' },
-                  { icon: '🛒', color: 'from-accent/[0.15] to-accent/[0.05]', title: 'Panier Intelligent', desc: 'Ajoutez les ingrédients au panier comme dans une boutique en ligne — prêt à acheter.' },
-                  { icon: '✅', color: 'from-green-100 to-green-50', title: 'Cochez en Faisant vos Courses', desc: 'Marquez les articles achetés pendant vos courses. Ne ratez plus jamais un ingrédient.' },
+                  { icon: '📋', color: 'from-primary/[0.12] to-primary/[0.05]', title: 'Auto-Generated Lists', desc: 'Ingredients from all your planned meals are combined into one organized list.' },
+                  { icon: '🛒', color: 'from-accent/[0.15] to-accent/[0.05]', title: 'Smart Cart', desc: 'Add ingredients to your cart like an online store, ready to buy.' },
+                  { icon: '✅', color: 'from-green-100 to-green-50', title: 'Check Items as You Shop', desc: 'Mark items as bought while shopping so nothing gets missed.' },
                 ].map((item, i) => (
                   <motion.div
                     key={i}
@@ -124,9 +124,9 @@ export default function GroceryShopping() {
             >
               <div className="bg-white rounded-3xl shadow-2xl shadow-black/[0.04] p-7 border border-border/30">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-bold text-text">Mon Panier 🛍️</h3>
+                  <h3 className="text-lg font-bold text-text">My Cart 🛍️</h3>
                   <span className="bg-primary/[0.1] text-primary px-4 py-1.5 rounded-full font-bold text-sm">
-                    {totalCount - checkedCount} articles
+                    {totalCount - checkedCount} items
                   </span>
                 </div>
 
@@ -140,7 +140,7 @@ export default function GroceryShopping() {
                         onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleItem(item.id); } }}
                         role="button"
                         tabIndex={0}
-                        aria-label={`${isChecked ? 'Décocher' : 'Cocher'} ${item.name} (${item.qty})`}
+                        aria-label={`${isChecked ? 'Uncheck' : 'Check'} ${item.name} (${item.qty})`}
                         className={`flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all duration-300 ${
                           isChecked 
                             ? 'bg-green-50/80 border border-green-200/40' 
@@ -174,9 +174,9 @@ export default function GroceryShopping() {
                   <div className="mb-4 text-center">
                     <p className="text-sm text-textSecondary">
                       {checkedCount === totalCount ? (
-                        <span className="text-green-600 font-semibold">✅ Tous les articles collectés !</span>
+                        <span className="text-green-600 font-semibold">✅ All items collected!</span>
                       ) : (
-                        <span>{checkedCount} sur {totalCount} articles cochés</span>
+                        <span>{checkedCount} of {totalCount} items checked</span>
                       )}
                     </p>
                     <div className="mt-3 w-full h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -191,7 +191,7 @@ export default function GroceryShopping() {
                     onClick={handleGoShopping}
                     className="w-full py-4 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all duration-200 text-base flex items-center justify-center gap-2"
                   >
-                    🛍️ Faire les Courses
+                    🛍️ Go Shopping
                   </button>
                 </div>
               </div>
@@ -204,7 +204,7 @@ export default function GroceryShopping() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.6, type: 'spring', stiffness: 200 }}
               >
-                ✨ Tout en un !
+                ✨ All-in-one!
               </motion.div>
             </motion.div>
           </div>

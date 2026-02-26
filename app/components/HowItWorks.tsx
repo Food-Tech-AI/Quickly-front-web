@@ -18,14 +18,14 @@ export default function HowItWorks() {
           transition={{ duration: 0.6 }}
         >
           <span className="inline-flex items-center gap-2 px-5 py-2  text-text font-semibold rounded-full text-sm tracking-wide border border-accent/[0.15]">
-            🚀 COMMENT ÇA MARCHE
+            🚀 HOW IT WORKS
           </span>
           <h2 className="text-4xl md:text-5xl lg:text-[3.25rem] font-black text-text mt-6 mb-5 leading-[1.15] tracking-[-0.02em]">
-            Simple comme{' '}
+            As easy as{' '}
             <span className="from-primary to-secondary bg-clip-text">1, 2, 3, 4</span>
           </h2>
           <p className="text-lg text-textSecondary max-w-lg mx-auto leading-relaxed">
-            De la découverte à la cuisine — tout en quatre étapes simples.
+            From discovery to cooking in four simple steps.
           </p>
         </motion.div>
 
@@ -82,4 +82,3 @@ export default function HowItWorks() {
     </section>
   );
 }
-

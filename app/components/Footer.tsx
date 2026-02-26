@@ -7,26 +7,26 @@ export default function Footer() {
 
   const linkGroups = [
     {
-      title: 'Produit',
+      title: 'Product',
       links: [
-        { label: 'Fonctionnalités', href: '#features' },
-        { label: 'Recettes', href: '/recipe' },
-        { label: 'Comment ça marche', href: '#how-it-works' },
-        { label: 'Panier de Courses', href: '#grocery-shopping' },
+        { label: 'Features', href: '#features' },
+        { label: 'Recipes', href: '/recipe' },
+        { label: 'How It Works', href: '#how-it-works' },
+        { label: 'Shopping Cart', href: '#grocery-shopping' },
       ],
     },
     {
-      title: 'Ressources',
+      title: 'Resources',
       links: [
-        { label: 'Créer une recette', href: '/recipe/create' },
-        { label: 'Explorer', href: '/recipe' },
-        { label: 'Connexion', href: '/login' },
+        { label: 'Create a recipe', href: '/recipe/create' },
+        { label: 'Explore', href: '/recipe' },
+        { label: 'Sign in', href: '/login' },
       ],
     },
     {
-      title: 'Légal',
+      title: 'Legal',
       links: [
-        { label: 'Confidentialité', href: '/privacy' },
+        { label: 'Privacy', href: '/privacy' },
       ],
     },
   ];
@@ -72,7 +72,7 @@ export default function Footer() {
               <h3 className="text-xl font-black">E-Quickly</h3>
             </div>
             <p className="text-white/45 text-sm leading-relaxed max-w-xs mb-6">
-              Transformez votre façon de découvrir, sauvegarder et cuisiner des recettes provenant des réseaux sociaux.
+              Change how you discover, save, and cook recipes from social media.
             </p>
             <div className="flex gap-3">
               {socials.map((social, i) => (
@@ -111,14 +111,13 @@ export default function Footer() {
         {/* Divider & Bottom */}
         <div className="border-t border-white/[0.06] pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-white/25 text-sm">
-            © {currentYear} E-Quickly. Tous droits réservés.
+            © {currentYear} E-Quickly. All rights reserved.
           </p>
           <p className="text-white/20 text-xs">
-            Fait avec 💚 pour les passionnés de cuisine
+            Made with 💚 for food lovers
           </p>
         </div>
       </div>
     </footer>
   );
 }
-

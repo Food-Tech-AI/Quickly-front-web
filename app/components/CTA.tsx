@@ -43,17 +43,17 @@ export default function CTA() {
           transition={{ duration: 0.7 }}
         >
           <span className="inline-flex items-center gap-2 px-5 py-2 bg-white/[0.08] text-white/80 font-semibold rounded-full text-sm mb-8 tracking-wide border border-white/[0.08]">
-            🚀 COMMENCEZ MAINTENANT
+            🚀 START NOW
           </span>
 
           <h2 className="text-4xl md:text-5xl lg:text-[3.25rem] font-black text-white mb-6 leading-[1.15] tracking-[-0.02em]">
-            Prêt à commencer votre
+            Ready to start your
             <br />
-            <span className="bg-gradient-to-r from-primary via-[#5DD4C8] to-accent bg-clip-text text-transparent">aventure culinaire ?</span>
+            <span className="bg-gradient-to-r from-primary via-[#5DD4C8] to-accent bg-clip-text text-transparent">culinary adventure?</span>
           </h2>
           
           <p className="text-lg text-white/60 mb-12 max-w-xl mx-auto leading-relaxed">
-            Rejoignez des milliers de cuisiniers qui découvrent des recettes, font leurs courses plus intelligemment et préparent des repas incroyables chaque jour.
+            Join thousands of cooks discovering recipes, shopping smarter, and making incredible meals every day.
           </p>
 
           <motion.div
@@ -68,14 +68,14 @@ export default function CTA() {
               className="px-10 py-4 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all duration-200 text-base flex items-center gap-2"
             >
               <span>🍽️</span>
-              <span>Explorer les Recettes</span>
+              <span>Explore Recipes</span>
             </a>
             <a
               href="/login"
               className="px-10 py-4 bg-white text-text font-bold rounded-xl border-2 border-white hover:bg-white/90 transition-all duration-200 text-base flex items-center gap-2"
             >
               <span>✨</span>
-              <span>Créer un Compte</span>
+              <span>Create an Account</span>
             </a>
           </motion.div>
 
@@ -86,11 +86,10 @@ export default function CTA() {
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.5 }}
           >
-            Gratuit • Aucune carte de crédit requise • Commencez à cuisiner en quelques minutes
+            Free • No credit card required • Start cooking in minutes
           </motion.p>
         </motion.div>
       </div>
     </section>
   );
 }
-

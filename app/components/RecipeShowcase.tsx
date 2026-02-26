@@ -19,14 +19,14 @@ export default function RecipeShowcase() {
           transition={{ duration: 0.6 }}
         >
           <span className="inline-flex items-center gap-2 px-5 py-2 bg-primary/[0.08] text-primary font-semibold rounded-full text-sm tracking-wide border border-primary/[0.12]">
-            🍽️ RECETTES POPULAIRES
+            🍽️ POPULAR RECIPES
           </span>
           <h2 className="text-4xl md:text-5xl lg:text-[3.25rem] font-black text-text mt-6 mb-5 leading-[1.15] tracking-[-0.02em]">
-            Recettes{' '}
-            <span className="from-primary to-secondary bg-clip-text">Tendances</span>
+            Trending{' '}
+            <span className="from-primary to-secondary bg-clip-text">Recipes</span>
           </h2>
           <p className="text-lg text-textSecondary max-w-lg mx-auto leading-relaxed">
-            Découvrez ce que la communauté cuisine en ce moment.
+            Discover what the community is cooking right now.
           </p>
         </motion.div>
 
@@ -83,7 +83,7 @@ export default function RecipeShowcase() {
                   </div>
                   <div className="flex items-center gap-1.5 text-xs text-textSecondary bg-gray-50 px-3 py-2 rounded-lg">
                     <span>🥗</span>
-                    <span>{recipe.ingredients} ingrédients</span>
+                    <span>{recipe.ingredients} ingredients</span>
                   </div>
                 </div>
               </div>
@@ -103,7 +103,7 @@ export default function RecipeShowcase() {
             href="/recipe"
             className="group inline-flex items-center gap-2.5 px-8 py-4 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all duration-200 text-base"
           >
-            Explorer toutes les recettes
+            Explore all recipes
             <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>
@@ -113,4 +113,3 @@ export default function RecipeShowcase() {
     </section>
   );
 }
-
