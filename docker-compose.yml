@@ -4,6 +4,9 @@ services:
   app:
     image: ghcr.io/food-tech-ai/quickly-front-web:prod
     container_name: quickly-web
+    cpus: "1.5"
+    mem_limit: "1024m"
+    pids_limit: 256
     environment:
       NODE_ENV: production
       NEXT_PUBLIC_APP_NAME: Quickly
