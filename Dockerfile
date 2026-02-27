@@ -16,6 +16,7 @@ FROM node:${NODE_VERSION}-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV HOSTNAME=0.0.0.0
 
 RUN addgroup -S nodejs && adduser -S nextjs -G nodejs
 
