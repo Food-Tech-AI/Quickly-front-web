@@ -38,7 +38,7 @@ export default function IngredientPickerModal({
   const [totalCount, setTotalCount] = useState(0);
   const limit = 20;
 
-  // Create mode state
+  // Create mode state rede-p
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [creating, setCreating] = useState(false);
   const [categories, setCategories] = useState<IngredientCategory[]>([]);
